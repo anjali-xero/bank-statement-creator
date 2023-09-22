@@ -1,6 +1,6 @@
 import './App.css';
 import { jsPDF } from "jspdf";
-import autoTable from 'jspdf-autotable';
+import constData from "./consts.json";
 
 function App() {
   return (
@@ -83,7 +83,7 @@ const handleGenerate = () => {
 const buildPdf = (bankName, cheques_toggle, transactionCount) => {
   const doc = new jsPDF();
 
-  doc.text(bankName, 2, 10);
+  doc.text(bankName, 10, 15);
 
   let transactionsGenerated = 0;
   while (transactionsGenerated)
@@ -92,10 +92,8 @@ const buildPdf = (bankName, cheques_toggle, transactionCount) => {
     doc.text('cheques', 2, 15)
   }
 
-  // var img = new Image();
-  // img.src = path.resolve('bank-statement-creator/code/public/td-logo.png');
-  // var imgData = 'bank-statement-creator/code/public/td-logo.png';
-  // doc.addImage(img, 'png', 15, 40, 180, 160);
+  var imgData = constData.imageEncodings[bankName];
+  doc.addImage(imgData, 'JPEG', 15, 20, 15, 15);
   doc.save('test.pdf');
 }
 
