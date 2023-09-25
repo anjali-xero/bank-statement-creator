@@ -19,6 +19,7 @@ button {
 
 }
 select {
+  text-align: center;
   align-self: center;
   width: 200px;
   margin: 10px;
