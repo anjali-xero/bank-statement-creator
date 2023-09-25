@@ -3,6 +3,7 @@ import { jsPDF } from "jspdf";
 import constData from "./consts.json";
 import { debit_descriptions } from './fakeDebitTransactions';
 import { credit_descriptions } from './fakeCreditTransactions';
+import autoTable from 'jspdf-autotable';
 
 const SEED = Date.now();
 
@@ -87,7 +88,7 @@ const handleGenerate = () => {
 
 // A4 PAPER 210mm X 297mm
 const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = false, showBalance = false) => {
-  const doc = new jsPDF();
+  let doc = new jsPDF();
   const startDate = new Date('March 1 2023');
   const endDate = new Date('April 1 2023');
   const openingBalance = 0;

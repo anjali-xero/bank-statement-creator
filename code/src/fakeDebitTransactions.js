@@ -1,4 +1,4 @@
-const debit_descriptions = [
+export const debit_descriptions = [
   'OP ONLINE PURCHASE UBER CANADA',
   'CW INTERAC ETRNSFER SENT COTTON EYE JOE 202580803182956983473',
   'PR TINUNO',

@@ -1,4 +1,4 @@
-const credit_descriptions = [
+export const credit_descriptions = [
   'ETRSFR #10005 CIA.GOV',
   'XERO SOFTWARE C PAY BIG',
   'DEPOSIT #109872222 UNILEVER',
