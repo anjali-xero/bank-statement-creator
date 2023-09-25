@@ -4,10 +4,17 @@ import constData from "./consts.json";
 import { debit_descriptions } from './fakeDebitTransactions';
 import { credit_descriptions } from './fakeCreditTransactions';
 import autoTable from 'jspdf-autotable';
+import ContinuousSlider from './ContinuousSlider';
+import React from 'react';
+
+const MAX_CHEQUE_VALUE = 10000;
 
 const SEED = Date.now();
 
 function App() {
+
+  const [transactionCount, setTransactionCount] = React.useState(25);
+
   return (
     <div className="App">
       <header className="App-header">
@@ -54,17 +61,12 @@ function App() {
           <span className="slider round"></span>
         </label>
 
-        <label>Transaction Count:</label>
-        <select id='transCount' name='transCount'>
-          <option value=''></option>
-          <option value='5'>5</option>
-          <option value='25'>25</option>
-          <option value='50'>50</option>
-        </select>
+        <ContinuousSlider className="transaction-slider" setTransactionCount={setTransactionCount}/>
+
         <button 
           onClick={(e) => {
               e.preventDefault();
-              handleGenerate();
+              handleGenerate(transactionCount);
             }
           }
           type="button"
@@ -75,10 +77,10 @@ function App() {
   );
 }
 
-const handleGenerate = () => {
+const handleGenerate = (transactionCount) => {
   console.log('generated!');
   const bankName = document.getElementById('bank-name').value;
-  const numTransactions = document.getElementById('transCount').value;
+  const numTransactions = transactionCount;
   const cheques_toggle = document.getElementById('cheques-toggle').checked;
   const splitAmount = document.getElementById('deposits-withdrawals-toggle').checked;
   const showBalance = document.getElementById('balance-toggle').checked;
@@ -99,7 +101,8 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
   doc = buildTransactionTable(doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance);
 
   if (cheques_toggle) {
-    doc.text('cheques', 2, 15)
+    doc.text('cheques', 2, 15);
+    doc = buildChequeTable(doc, 10, startDate, endDate, 3);
   }
 
   var imgData = constData.imageEncodings[bankName];
@@ -131,15 +134,15 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
     let currentTransactionRow = [];
 
     if (splitAmount && currentTransactionAmount < 0) {
-      currentTransactionRow = [`${currLineDate.getMonth()}/${currLineDate.getDate()}`, `${currLineDate.getMonth()}/${currLineDate.getDate()}`, descriptionObject[Math.floor(Math.random(SEED) * descriptionObject.length)], currentTransactionAmount , ""];
+      currentTransactionRow = [`${currLineDate.getMonth()}/${currLineDate.getDate()}`, `${currLineDate.getMonth()}/${currLineDate.getDate()}`, descriptionObject[Math.floor(Math.random(SEED) * descriptionObject.length)], currentTransactionAmount.toFixed(2) , ""];
     } else if (splitAmount) {
-      currentTransactionRow = [`${currLineDate.getMonth()}/${currLineDate.getDate()}`, `${currLineDate.getMonth()}/${currLineDate.getDate()}`, descriptionObject[Math.floor(Math.random(SEED) * descriptionObject.length)], "" , currentTransactionAmount];
+      currentTransactionRow = [`${currLineDate.getMonth()}/${currLineDate.getDate()}`, `${currLineDate.getMonth()}/${currLineDate.getDate()}`, descriptionObject[Math.floor(Math.random(SEED) * descriptionObject.length)], "" , currentTransactionAmount.toFixed(2)];
     } else {
-      currentTransactionRow = [`${currLineDate.getMonth()}/${currLineDate.getDate()}`, `${currLineDate.getMonth()}/${currLineDate.getDate()}`, descriptionObject[Math.floor(Math.random(SEED) * descriptionObject.length)], currentTransactionAmount];
+      currentTransactionRow = [`${currLineDate.getMonth()}/${currLineDate.getDate()}`, `${currLineDate.getMonth()}/${currLineDate.getDate()}`, descriptionObject[Math.floor(Math.random(SEED) * descriptionObject.length)], currentTransactionAmount.toFixed(2)];
     }
 
     if (showBalance) {
-      currentTransactionRow.push(Math.round(100 * (openingBalance + accumulatedBalanceDifference + Number.EPSILON)) / 100);
+      currentTransactionRow.push((Math.round(100 * (openingBalance + accumulatedBalanceDifference + Number.EPSILON)) / 100).toFixed(2));
     }
 
     transactionRows.push(currentTransactionRow);
@@ -164,6 +167,51 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
   autoTable(doc, {
     head: [headerRow],
     body: transactionRows
+  });
+
+  return doc;
+}
+
+const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns) => {
+  const headerRow = ['CHECK #', 'DATE', 'AMOUNT'];
+  const chequeRows = [];
+  let currentDay = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24) - chequeCount;
+
+  let numChequeTables = 1;
+  while (numChequeTables < numColumns) {
+    headerRow.push('CHECK #');
+    headerRow.push('DATE');
+    headerRow.push('AMOUNT');
+    numChequeTables++;
+  }
+
+  let numChequesAdded = 0;
+  let accumulatedChequeValue = 0;
+  while (numChequesAdded < chequeCount) {
+    const singleChequeRow = [];
+    for (let i = 0; i < numColumns; i++) {
+      const checkNum = `${Math.floor(Math.random(SEED) * 1000000)}`;
+      const checkDate = startDate.addDays(currentDay > 0 ? currentDay : 0);
+      let checkAmount = (Math.round(Math.random(SEED)) * 2 - 1) * (Math.round(100 * (Math.random(SEED) * MAX_CHEQUE_VALUE + Number.EPSILON)) / 100);
+      if (accumulatedChequeValue !== 0 && numChequesAdded === chequeCount - 1) {
+        checkAmount = (-1 * accumulatedChequeValue);
+      }
+      accumulatedChequeValue += checkAmount
+
+      if (numChequesAdded < chequeCount) {
+        singleChequeRow.push(checkNum);
+        singleChequeRow.push(`${checkDate.getMonth()}/${checkDate.getDate()}`);
+        singleChequeRow.push(checkAmount.toFixed(2));
+        numChequesAdded++;
+      }
+      currentDay++;
+    }
+    chequeRows.push(singleChequeRow);
+  }
+
+  autoTable(doc, {
+    head: [headerRow],
+    body: chequeRows
   });
 
   return doc;

@@ -39,6 +39,11 @@ label {
   margin: 10px;
 }
 
+.form-container {
+  margin-left: 3%;
+  margin-right: 3%;
+}
+
 .switch {
   align-self: center;
   margin: 10px;
