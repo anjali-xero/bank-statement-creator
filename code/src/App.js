@@ -10,6 +10,7 @@ import React from 'react';
 import ContinuousSlider from './ContinuousSlider';
 
 const MAX_CHEQUE_VALUE = 10000;
+const TABLE_HEADER_MARGIN = 2; //px
 
 const SEED = Date.now();
 
@@ -26,6 +27,8 @@ function App() {
     const splitAmount = document.getElementById('deposits-withdrawals-toggle').checked;
     const showBalance = document.getElementById('balance-toggle').checked;
     const tableStyle = document.getElementById('tableStyles').value;
+    const tableSplit = document.getElementById('deposits-withdrawals-table-toggle').checked;
+    const tableHeaderToggle = document.getElementById('table-header-toggle').checked;
 
     const monthNames = ["January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December"
@@ -34,7 +37,7 @@ function App() {
     const closingDateStr = monthNames[closingDate.$M] + " " + closingDate.$D.toString() +  ", " + closingDate.$y.toString()
     console.log(openingDateStr)
   
-    buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle);
+    buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle, tableSplit, tableHeaderToggle);
   };
 
   return (
@@ -96,9 +99,31 @@ function App() {
           <span className="slider round"></span>
         </label>
 
-        <label> Switch toggle on to split withdrawals and deposits into seperate columns in bank statement: </label>
+        <label> Switch toggle on to show table header on every page: </label>
         <label className="switch">
-          <input id='deposits-withdrawals-toggle' type="checkbox"></input>
+          <input id='table-header-toggle' type="checkbox"></input>
+          <span className="slider round"></span>
+        </label>
+
+        <label> Switch toggle on to split withdrawals and deposits into seperate <strong>columns</strong> in bank statement: </label>
+        <label className="switch">
+          <input onChange={() => {
+            const column_split_toggle = document.getElementById('deposits-withdrawals-toggle').checked;
+            if (column_split_toggle) {
+              document.getElementById('deposits-withdrawals-table-toggle').checked = false
+            }
+          }} id='deposits-withdrawals-toggle' type="checkbox"></input>
+          <span className="slider round"></span>
+        </label>
+
+        <label> Switch toggle on to split withdrawals and deposits into seperate <strong>tables</strong> in bank statement: </label>
+        <label className="switch">
+          <input onChange={() => {
+            const table_split_toggle = document.getElementById('deposits-withdrawals-table-toggle').checked;
+            if (table_split_toggle) {
+              document.getElementById('deposits-withdrawals-toggle').checked = false
+            }
+          }} id='deposits-withdrawals-table-toggle' type="checkbox"></input>
           <span className="slider round"></span>
         </label>
 
@@ -120,7 +145,7 @@ function App() {
 }
 
 // A4 PAPER 210mm X 297mm
-const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = false, showBalance = false, openingDateStr, closingDateStr, tableStyle='striped') => {
+const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = false, showBalance = false, openingDateStr, closingDateStr, tableStyle='striped', tableSplit, tableHeaderToggle) => {
   let doc = new jsPDF();
   doc.setFont("helvetica");
   doc.setFontSize(9);
@@ -163,21 +188,23 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
 
   doc.text('Dear customer, we are pleased to introduce to you paperless banking. We are excited for you to join us on this journey. Now you can retrieve images of cheques in seconds and view them online of on our app. ', 130, 70, { maxWidth: 60 });
 
-  doc = buildTransactionTable(doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance, autotableColor, tableStyle);
+  doc = buildTransactionTable(doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance, autotableColor, tableStyle, tableSplit, tableHeaderToggle);
 
   if (cheques_toggle) {
-    doc = buildChequeTable(doc, 10, startDate, endDate, 3, tableStyle);
+    doc = buildChequeTable(doc, 10, startDate, endDate, 3, autotableColor, tableStyle, tableHeaderToggle);
   }
 
   doc.save('test.pdf');
 }
 
-const buildTransactionTable = (doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, autotableColor, tableStyle) => {
+const buildTransactionTable = (doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, autotableColor, tableStyle, tableSplit, tableHeaderToggle) => {
 
   const balanceDifference = closingBalance - openingBalance;
 
   let transactionsGenerated = 0;
   let transactionRows = [];
+  let debitTransactionRows = [];
+  let creditTransactionRows = [];
   let accumulatedBalanceDifference = 0;
   let currentDay = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24) - transactionCount;
 
@@ -207,7 +234,13 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
       currentTransactionRow.push((Math.round(100 * (openingBalance + accumulatedBalanceDifference + Number.EPSILON)) / 100).toFixed(2));
     }
 
-    transactionRows.push(currentTransactionRow);
+    if (tableSplit && currentTransactionAmount < 0) {
+      debitTransactionRows.push(currentTransactionRow);
+    } else if (tableSplit) {
+      creditTransactionRows.push(currentTransactionRow);
+    } else {
+      transactionRows.push(currentTransactionRow);
+    }
     
     currentDay++;
     transactionsGenerated++;
@@ -215,29 +248,71 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
 
   const headerRow = ['TRAN DATE', 'POST DATE', 'DESCRIPTION'];
 
-  if (splitAmount) {
-    headerRow.push('DEBIT');
-    headerRow.push('CREDIT');
-  } else {
+  if (tableSplit) {
     headerRow.push('AMOUNT');
-  }
 
-  if (showBalance) {
-    headerRow.push('BALANCE');
-  }
+    if (showBalance) {
+      headerRow.push('BALANCE');
+    }
 
-  autoTable(doc, {
-    theme: tableStyle,
-    head: [headerRow],
-    body: transactionRows,
-    startY: 100,
-    headStyles :{fillColor : autotableColor}
-  });
+    const previousTableY = doc.autoTable.previous.finalY;
+
+    autoTable(doc, {
+      theme: tableStyle,
+      head: [headerRow],
+      body: creditTransactionRows,
+      startY: 100,
+      headStyles :{fillColor : autotableColor},
+      showHeader: tableHeaderToggle ? 'everyPage' : 'firstPage',
+      addPageContent: function(data) {
+        console.log(doc.autoTable.previous.finalY);
+        const previousY = doc.autoTable.previous.finalY;
+        const approxTableHeight = (data.table.body.length + 1) * data.table.body[0].height;
+        const titleY = previousY ? previousY + TABLE_HEADER_MARGIN*2 : data.cursor.y - approxTableHeight - TABLE_HEADER_MARGIN;
+        doc.text("CREDIT TRANSACTIONS", 15, titleY);
+      }
+    });
+
+    autoTable(doc, {
+      theme: tableStyle,
+      head: [headerRow],
+      body: debitTransactionRows,
+      headStyles :{fillColor : autotableColor},
+      showHeader: tableHeaderToggle ? 'everyPage' : 'firstPage',
+      addPageContent: function(data) {
+        console.log(doc.autoTable.previous.finalY);
+        const previousY = doc.autoTable.previous.finalY;
+        const approxTableHeight = (data.table.body.length + 1) * data.table.body[0].height;
+        const titleY = previousY ? previousY + TABLE_HEADER_MARGIN*2 : data.cursor.y - approxTableHeight - TABLE_HEADER_MARGIN;
+        doc.text("DEBIT TRANSACTIONS", 15, titleY);
+      }
+    });
+  } else {
+    if (splitAmount) {
+      headerRow.push('DEBIT');
+      headerRow.push('CREDIT');
+    } else {
+      headerRow.push('AMOUNT');
+    }
+  
+    if (showBalance) {
+      headerRow.push('BALANCE');
+    }
+  
+    autoTable(doc, {
+      theme: tableStyle,
+      head: [headerRow],
+      body: transactionRows,
+      startY: 100,
+      showHeader: tableHeaderToggle ? 'everyPage' : 'firstPage',
+      headStyles :{fillColor : autotableColor}
+    });
+  }
 
   return doc;
 }
 
-const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, tableLines='striped', tableStyle='striped') => {
+const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, autotableColor, tableStyle='striped', tableHeaderToggle) => {
   const headerRow = ['CHECK #', 'DATE', 'AMOUNT'];
   const chequeRows = [];
   let currentDay = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24) - chequeCount;
@@ -277,7 +352,9 @@ const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, tabl
   autoTable(doc, {
     theme: tableStyle,
     head: [headerRow],
-    body: chequeRows
+    body: chequeRows,
+    showHeader: tableHeaderToggle ? 'everyPage' : 'firstPage',
+    headStyles: {fillColor: autotableColor}
   });
 
   return doc;
