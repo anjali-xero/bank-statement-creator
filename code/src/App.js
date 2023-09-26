@@ -131,6 +131,10 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
 
   // doc.text(bankName, 10, 15);
 
+  const autotableColorDict = {'TD': [53, 178, 52], 'BMO': [0, 121, 193], "Scotiabank":[255,0,0] , "RBC": [255, 210, 0]}
+
+  const autotableColor = autotableColorDict[bankName];
+
   var imgData = constData.imageEncodings[bankName];
   doc.addImage(imgData, 'JPEG', 15, 17, 15, 15);
 
@@ -140,7 +144,7 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
   doc.text('Toronto, Ontario, M1G EY7', 35, 30);
   doc.text( "From " + openingDateStr + " to " + closingDateStr, 130, 20);
 
-  doc.setFontSize(16);
+  doc.setFontSize(12);
   // adding  personal address and account summary
   doc.text("Susan Sample", 15, 47);
   doc.text('1234 Random Street, Unit 1', 15, 54);
@@ -152,10 +156,14 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
   doc.text("___________________________________ ", 130, 50);
   doc.text("How to reach us: ", 130, 54);
   doc.text("1-800-bank ", 175, 54);
-  doc.text('www.'+ bankName+".com", 192, 58, {align: 'right'});
+  doc.text('www.'+ bankName +".com", 192, 58, {align: 'right'});
 
-  console.log(tableStyle)
-  doc = buildTransactionTable(doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance, tableStyle);
+  doc.setLineWidth(0.5);
+  doc.rect(127, 65, 65, 25);
+
+  doc.text('Dear customer, we are pleased to introduce to you paperless banking. We are excited for you to join us on this journey. Now you can retrieve images of cheques in seconds and view them online of on our app. ', 130, 70, { maxWidth: 60 });
+
+  doc = buildTransactionTable(doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance, autotableColor, tableStyle);
 
   if (cheques_toggle) {
     doc = buildChequeTable(doc, 10, startDate, endDate, 3, tableStyle);
@@ -164,7 +172,7 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
   doc.save('test.pdf');
 }
 
-const buildTransactionTable = (doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, tableStyle) => {
+const buildTransactionTable = (doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, autotableColor, tableStyle) => {
 
   const balanceDifference = closingBalance - openingBalance;
 
@@ -222,7 +230,8 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
     theme: tableStyle,
     head: [headerRow],
     body: transactionRows,
-    startY: 100
+    startY: 100,
+    headStyles :{fillColor : autotableColor}
   });
 
   return doc;
