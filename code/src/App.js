@@ -9,11 +9,13 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import React from 'react';
 import ContinuousSlider from './ContinuousSlider';
 import { BANK_NAMES } from './bankNames';
+import './Please write me a song-normal.js'
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 
 const MAX_CHEQUE_VALUE = 10000;
 const TABLE_HEADER_MARGIN = 2; //px
+const CUSTOM_FONT = "Please write me a song";
 
 const SEED = Date.now();
 
@@ -36,7 +38,8 @@ function App() {
     const tableStyle = document.getElementById('tableStyles').value;
     const tableSplit = document.getElementById('deposits-withdrawals-table-toggle').checked;
     const tableHeaderToggle = document.getElementById('table-header-toggle').checked;
-    const customBankName = document.getElementById('custom-bank-name').value;
+    const customBankName = document.getElementById('custom-bank-name') ? document.getElementById('custom-bank-name').value : "";
+    const customFont = document.getElementById('handwriting-toggle').checked;
 
     bankName = customBankName.length > 0 ? customBankName : bankName;
     const summaryToggle = document.getElementById('summary-header-toggle').checked;
@@ -48,7 +51,7 @@ function App() {
     const closingDateStr = monthNames[closingDate.$M] + " " + closingDate.$D.toString() +  ", " + closingDate.$y.toString()
     console.log(openingBalance, closingBalance)
   
-    buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle, parseFloat(openingBalance), parseFloat(closingBalance), tableSplit, tableHeaderToggle, summaryToggle);
+    buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle, parseFloat(openingBalance), parseFloat(closingBalance), tableSplit, tableHeaderToggle, summaryToggle, customFont);
   };
 
   const loadBankNames = () => {
@@ -151,6 +154,12 @@ function App() {
           <span className="slider round"></span>
         </label>
 
+        <label> Switch toggle on to use handwriting: </label>
+        <label className="switch">
+          <input id='handwriting-toggle' type="checkbox"></input>
+          <span className="slider round"></span>
+        </label>
+
         <label> Switch toggle on to split withdrawals and deposits into seperate <strong>columns</strong> in bank statement: </label>
         <label className="switch">
           <input onChange={() => {
@@ -194,9 +203,10 @@ function App() {
 }
 
 // A4 PAPER 210mm X 297mm
-const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = false, showBalance = false, openingDateStr, closingDateStr, tableStyle='striped', openingBalance, closingBalance, tableSplit, tableHeaderToggle, summaryToggle) => {
+const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = false, showBalance = false, openingDateStr, closingDateStr, tableStyle='striped', openingBalance, closingBalance, tableSplit, tableHeaderToggle, summaryToggle, customFont) => {
   let doc = new jsPDF();
-  doc.setFont("helvetica");
+  doc.setFont(customFont ? CUSTOM_FONT : 'helvetica');
+  // doc.setFontType('normal');
   doc.setFontSize(9);
   const startDate = new Date('March 1 2023');
   const endDate = new Date('April 1 2023');
@@ -244,9 +254,9 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
   doc.text("___________________________________ ", 130, 60);
 
   if (!summaryToggle) {
-    buildSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor);
+    buildSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor, customFont);
   } else {
-    buildSingleRowSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor);
+    buildSingleRowSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor, customFont);
   }
 
   
@@ -256,16 +266,16 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
 
   doc.text('Dear customer, we are pleased to introduce to you paperless banking. We are excited for you to join us on this journey. Now you can retrieve images of cheques in seconds and view them online of on our app. ', 130, 70, { maxWidth: 60 });
 
-  doc = buildTransactionTable(doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance, autotableColor, tableStyle, tableSplit, tableHeaderToggle);
+  doc = buildTransactionTable(doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont);
 
   if (cheques_toggle) {
-    doc = buildChequeTable(doc, 10, startDate, endDate, 3, autotableColor, tableStyle, tableHeaderToggle);
+    doc = buildChequeTable(doc, 10, startDate, endDate, 3, autotableColor, tableStyle, tableHeaderToggle, customFont);
   }
 
   doc.save('test.pdf');
 }
 
-const buildSummaryTable = (doc, bankName, openingDate, closingDate, openingBalance=0, closingBalance=0, autotableColor) => {
+const buildSummaryTable = (doc, bankName, openingDate, closingDate, openingBalance=0, closingBalance=0, autotableColor, customFont) => {
   doc.text("___________________________________ ", 15, 75);
   // doc.text('')
 
@@ -296,11 +306,13 @@ const buildSummaryTable = (doc, bankName, openingDate, closingDate, openingBalan
           halign: 'right'
       },
     },
-    headStyles :{fillColor : autotableColor}
+    headStyles :{fillColor : autotableColor},
+    styles: { font: customFont ? CUSTOM_FONT : 'helvetica' },
+    // theme: 'grid'
   });
 
 }
-const buildSingleRowSummaryTable = (doc, bankName, openingDateStr, closingDateStr, openingBalance=0, closingBalance=0, autotableColor) => { 
+const buildSingleRowSummaryTable = (doc, bankName, openingDateStr, closingDateStr, openingBalance=0, closingBalance=0, autotableColor, customFont) => { 
 
   const header = [];
   header.push('Opening Balance');
@@ -341,11 +353,12 @@ const buildSingleRowSummaryTable = (doc, bankName, openingDateStr, closingDateSt
         halign: 'center'
       }
     },
-    headStyles :{fillColor : autotableColor}
+    headStyles :{fillColor : autotableColor},
+    styles: { font: customFont ? CUSTOM_FONT : 'helvetica' },
   });
   
 }
-const buildTransactionTable = (doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, autotableColor, tableStyle, tableSplit, tableHeaderToggle) => {
+const buildTransactionTable = (doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont) => {
 
   const balanceDifference = closingBalance - openingBalance;
 
@@ -413,6 +426,7 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
       headStyles :{fillColor : autotableColor},
       startY: 120,
       showHeader: tableHeaderToggle ? 'everyPage' : 'firstPage',
+      styles: { font: customFont ? CUSTOM_FONT : 'helvetica' },
       addPageContent: function(data) {
         console.log(doc.autoTable.previous.finalY);
         const previousY = doc.autoTable.previous.finalY;
@@ -429,6 +443,7 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
       headStyles :{fillColor : autotableColor},
       startY: 120,
       showHeader: tableHeaderToggle ? 'everyPage' : 'firstPage',
+      styles: { font: customFont ? CUSTOM_FONT : 'helvetica' },
       addPageContent: function(data) {
         console.log(doc.autoTable.previous.finalY);
         const previousY = doc.autoTable.previous.finalY;
@@ -455,6 +470,7 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
       body: transactionRows,
       startY: 120,
       showHeader: tableHeaderToggle ? 'everyPage' : 'firstPage',
+      styles: { font: customFont ? CUSTOM_FONT : 'helvetica' },
       headStyles :{fillColor : autotableColor}
     });
   }
@@ -462,7 +478,7 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
   return doc;
 }
 
-const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, autotableColor, tableStyle='striped', tableHeaderToggle) => {
+const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, autotableColor, tableStyle='striped', tableHeaderToggle, customFont) => {
   const headerRow = ['CHECK #', 'DATE', 'AMOUNT'];
   const chequeRows = [];
   let currentDay = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24) - chequeCount;
@@ -504,7 +520,8 @@ const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, auto
     head: [headerRow],
     body: chequeRows,
     showHeader: tableHeaderToggle ? 'everyPage' : 'firstPage',
-    headStyles: {fillColor: autotableColor}
+    headStyles: {fillColor: autotableColor},
+    styles: { font: customFont ? CUSTOM_FONT : 'helvetica' },
   });
 
   return doc;
