@@ -14,13 +14,11 @@ code {
 
 .opening-balance {
   width: 100px;
+  margin: 0px !important;
+  align-content: center;
   .button {
     align-self: center
-  };
-  .label {
-    margin: 0px !important;
-  };
-
+  }
 }
 button {
   align-self: center;
