@@ -8,6 +8,7 @@ import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import React from 'react';
 import ContinuousSlider from './ContinuousSlider';
+import { BANK_NAMES } from './bankNames';
 
 const MAX_CHEQUE_VALUE = 10000;
 const TABLE_HEADER_MARGIN = 2; //px
@@ -18,10 +19,11 @@ function App() {
   const [openingDate, setOpeningDate] = React.useState(null);
   const [closingDate, setClosingDate] = React.useState(null);
   const [transactionCount, setTransactionCount] = React.useState(25);
+  const [showCustom, setShowCustom] = React.useState(true);
 
   const handleGenerate = () => {
     console.log('generated!');
-    const bankName = document.getElementById('bank-name').value;
+    let bankName = document.getElementById('bank-name').value;
     const numTransactions = transactionCount;
     const cheques_toggle = document.getElementById('cheques-toggle').checked;
     const splitAmount = document.getElementById('deposits-withdrawals-toggle').checked;
@@ -31,6 +33,9 @@ function App() {
     const tableHeaderToggle = document.getElementById('table-header-toggle').checked;
     const openingBalance = document.getElementById('opening-balance').value;
     const closingBalance = document.getElementById('closing-balance').value;
+    const customBankName = document.getElementById('custom-bank-name').value;
+
+    bankName = customBankName.length > 0 ? customBankName : bankName;
 
     const monthNames = ["January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December"
@@ -42,6 +47,14 @@ function App() {
     buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle, parseInt(openingBalance), parseInt(closingBalance), tableSplit, tableHeaderToggle);
   };
 
+  const loadBankNames = () => {
+    const optionsObject = [];
+    BANK_NAMES.forEach(name => {
+      optionsObject.push(<option value={name}>{name}</option>)
+    });
+    return optionsObject;
+  }
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
     <div className="App">
@@ -52,12 +65,28 @@ function App() {
       </header>
       <form>
         <label> Select Bank Name:</label>
-        <select id='bank-name' name='bank-name'>
-          <option value='RBC'>RBC</option>
-          <option value='TD'>TD</option>
-          <option value='Scotiabank'>Scotiabank</option>
-          <option value='BMO'>BMO</option>
+        <select onChange={() => {
+          if (document.getElementById('bank-name').value !== 'OTHER (CUSTOM NAME)') {
+            setShowCustom(false);
+          } else {
+            console.log('true')
+            setShowCustom(true);
+          }
+        }} id='bank-name' name='bank-name'>
+          {loadBankNames()}
         </select>
+
+        {showCustom ? 
+          <><label id="custom-bank-name-label" className="custom-bank-fields">Input Custom Bank Name:</label>
+          <input
+            id="custom-bank-name"
+            type="text"
+            name="custom-bank-name"
+            className="custom-bank-fields"
+          /></>
+          :
+          <></>
+        }
 
         <label> Insert Opening balance for bank statement:</label>
         <input
@@ -158,11 +187,21 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
 
   // doc.text(bankName, 10, 15);
 
-  const autotableColorDict = {'TD': [53, 178, 52], 'BMO': [0, 121, 193], "Scotiabank":[255,0,0] , "RBC": [255, 210, 0]}
+  const autotableColorDict = {
+    'TD': [53, 178, 52], 'BMO': [0, 121, 193], "Scotiabank":[255,0,0] , "RBC": [255, 210, 0],
+    "Citibank": [0, 93, 224], "ATB": [0, 117, 234], "Paypal": [255, 205, 47], "Tangerine": [239, 108, 47],
+    "Manulife Bank": [0, 192, 111], "Comerica": [42, 71, 122], "Fifth Third Bank": [2, 65, 144],
+    "Capital One": [0, 20, 42], "U.S. Bank": [0, 35, 113], "Desjardins": [0, 136, 83], "RBS": [61, 15, 81],
+    "Home Depot": [252, 126, 50], "Capitec": [0, 76, 122], "Regions": [110, 199, 69], "Chase": [0, 86, 166],
+    "HSBC": [223, 0, 22], "Bank of America": [232, 0, 56], "Wells Fargo": [219, 5, 42], "CIBC": [180, 0, 30],
+    "OTHER (CUSTOM NAME)": [34, 62, 26]
+  }
 
-  const autotableColor = autotableColorDict[bankName];
+  const colorBankName = BANK_NAMES.includes(bankName) ? bankName : 'OTHER (CUSTOM NAME)';
 
-  var imgData = constData.imageEncodings[bankName];
+  const autotableColor = autotableColorDict[colorBankName];
+
+  var imgData = constData.imageEncodings[colorBankName];
   doc.addImage(imgData, 'JPEG', 15, 17, 15, 15);
 
   // adding bank name and address 
