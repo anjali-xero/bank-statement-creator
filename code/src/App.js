@@ -25,6 +25,7 @@ function App() {
     const cheques_toggle = document.getElementById('cheques-toggle').checked;
     const splitAmount = document.getElementById('deposits-withdrawals-toggle').checked;
     const showBalance = document.getElementById('balance-toggle').checked;
+    const tableStyle = document.getElementById('tableStyles').value;
 
     const monthNames = ["January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December"
@@ -33,7 +34,7 @@ function App() {
     const closingDateStr = monthNames[closingDate.$M] + " " + closingDate.$D.toString() +  ", " + closingDate.$y.toString()
     console.log(openingDateStr)
   
-    buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr);
+    buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle);
   };
 
   return (
@@ -76,6 +77,13 @@ function App() {
           <DatePicker  id='closing-date' dateFormat='dd,MM,yyyy' value={closingDate} onChange={(newClosingDate) => setClosingDate(newClosingDate)} />
         </div>
 
+        <label for="tableStyle">Table Style:</label>
+        <select name="tableStyles" id="tableStyles">
+          <option value="striped">STRIPED</option>
+          <option value="grid">GRID</option>
+          <option value="plain">PLAIN</option>
+        </select>
+
         <label> Switch toggle on to include cheques in bank statement: </label>
         <label className="switch">
           <input id='cheques-toggle' type="checkbox"></input>
@@ -111,19 +119,8 @@ function App() {
   );
 }
 
-const handleGenerate = (transactionCount) => {
-  console.log('generated!');
-  const bankName = document.getElementById('bank-name').value;
-  const numTransactions = transactionCount;
-  const cheques_toggle = document.getElementById('cheques-toggle').checked;
-  const splitAmount = document.getElementById('deposits-withdrawals-toggle').checked;
-  const showBalance = document.getElementById('balance-toggle').checked;
-
-  buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance);
-};
-
 // A4 PAPER 210mm X 297mm
-const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = false, showBalance = false, openingDateStr, closingDateStr) => {
+const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = false, showBalance = false, openingDateStr, closingDateStr, tableStyle='striped') => {
   let doc = new jsPDF();
   doc.setFont("helvetica");
   doc.setFontSize(9);
@@ -157,16 +154,17 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
   doc.text("1-800-bank ", 175, 54);
   doc.text('www.'+ bankName+".com", 192, 58, {align: 'right'});
 
-  doc = buildTransactionTable(doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance);
+  console.log(tableStyle)
+  doc = buildTransactionTable(doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance, tableStyle);
 
   if (cheques_toggle) {
-    doc = buildChequeTable(doc, 10, startDate, endDate, 3);
+    doc = buildChequeTable(doc, 10, startDate, endDate, 3, tableStyle);
   }
 
   doc.save('test.pdf');
 }
 
-const buildTransactionTable = (doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false) => {
+const buildTransactionTable = (doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, tableStyle) => {
 
   const balanceDifference = closingBalance - openingBalance;
 
@@ -221,6 +219,7 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
   }
 
   autoTable(doc, {
+    theme: tableStyle,
     head: [headerRow],
     body: transactionRows,
     startY: 100
@@ -229,7 +228,7 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
   return doc;
 }
 
-const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns) => {
+const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, tableLines='striped', tableStyle='striped') => {
   const headerRow = ['CHECK #', 'DATE', 'AMOUNT'];
   const chequeRows = [];
   let currentDay = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24) - chequeCount;
@@ -267,6 +266,7 @@ const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns) => {
   }
 
   autoTable(doc, {
+    theme: tableStyle,
     head: [headerRow],
     body: chequeRows
   });
