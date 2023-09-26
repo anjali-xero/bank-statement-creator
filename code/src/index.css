@@ -12,6 +12,16 @@ code {
     monospace;
 }
 
+.opening-balance {
+  width: 100px;
+  .button {
+    align-self: center
+  };
+  .label {
+    margin: 0px !important;
+  };
+
+}
 button {
   align-self: center;
   width: 100px;
