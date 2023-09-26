@@ -9,6 +9,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import React from 'react';
 import ContinuousSlider from './ContinuousSlider';
 import { BANK_NAMES } from './bankNames';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 
 const MAX_CHEQUE_VALUE = 10000;
 const TABLE_HEADER_MARGIN = 2; //px
@@ -36,15 +38,16 @@ function App() {
     const customBankName = document.getElementById('custom-bank-name').value;
 
     bankName = customBankName.length > 0 ? customBankName : bankName;
+    const summaryToggle = document.getElementById('summary-header-toggle').checked;
 
     const monthNames = ["January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December"
     ];
     const openingDateStr = monthNames[openingDate.$M] + " " + openingDate.$D.toString() +  ", " + openingDate.$y.toString()
     const closingDateStr = monthNames[closingDate.$M] + " " + closingDate.$D.toString() +  ", " + closingDate.$y.toString()
-    console.log(openingDateStr)
+    console.log(summaryToggle)
   
-    buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle, parseInt(openingBalance), parseInt(closingBalance), tableSplit, tableHeaderToggle);
+    buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle, parseInt(openingBalance), parseInt(closingBalance), tableSplit, tableHeaderToggle, summaryToggle);
   };
 
   const loadBankNames = () => {
@@ -89,11 +92,21 @@ function App() {
         }
 
         <label> Insert Opening balance for bank statement:</label>
-        <input
+        {/* <input
             id="opening-balance"
             type="text"
             name="opening-balance"
-          />
+          /> */}
+          <div id="opening-balance">
+            <TextField
+              required
+              id="outlined-required"
+              label="Required"
+              defaultValue="1000"
+            />
+
+          </div>
+
         <label> Insert Closing balance for bank statement:</label>
         <input
             id="closing-balance"
@@ -158,16 +171,19 @@ function App() {
           <span className="slider round"></span>
         </label>
 
+        <label> Switch toggle on to consolidate summary table into one row  </label>
+        <label className="switch">
+          <input id='summary-header-toggle' type="checkbox"></input>
+          <span className="slider round"></span>
+        </label>
+
         <ContinuousSlider className="transaction-slider" setTransactionCount={setTransactionCount}/>
 
-        <button 
-          onClick={(e) => {
+        <Button variant="contained" onClick={(e) => {
               e.preventDefault();
               handleGenerate(transactionCount);
             }
-          }
-          type="button"
-        >generate!</button>
+          }>generate!</Button>
       </form>
      
     </div>
@@ -176,7 +192,7 @@ function App() {
 }
 
 // A4 PAPER 210mm X 297mm
-const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = false, showBalance = false, openingDateStr, closingDateStr, tableStyle='striped', openingBalance, closingBalance, tableSplit, tableHeaderToggle) => {
+const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = false, showBalance = false, openingDateStr, closingDateStr, tableStyle='striped', openingBalance, closingBalance, tableSplit, tableHeaderToggle, summaryToggle) => {
   let doc = new jsPDF();
   doc.setFont("helvetica");
   doc.setFontSize(9);
@@ -225,7 +241,13 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
   doc.text('www.'+ bankName +".com", 192, 58, {align: 'right'});
   doc.text("___________________________________ ", 130, 60);
 
-  buildSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor);
+  if (!summaryToggle) {
+    buildSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor);
+  } else {
+    buildSingleRowSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor);
+  }
+
+  
 
   doc.setLineWidth(0.5);
   doc.rect(127, 65, 65, 25);
@@ -273,12 +295,54 @@ const buildSummaryTable = (doc, bankName, openingDate, closingDate, openingBalan
       },
     },
     headStyles :{fillColor : autotableColor}
-    // styles: { tableWidth: "75px" },
-    // theme: 'grid'
   });
 
 }
+const buildSingleRowSummaryTable = (doc, bankName, openingDate, closingDate, openingBalance=0, closingBalance=0, autotableColor) => { 
 
+  const header = [];
+  header.push('Opening Balance');
+  header.push('Deposits')
+  header.push("Withdrawals")
+  header.push("Closing Balance")
+  const body = [];
+  const totalAccountDiff = (closingBalance - openingBalance) / 2
+
+  const openingBalanceStr = openingBalance.toString();
+  body.push(openingBalanceStr)
+
+  const depositsStr = totalAccountDiff.toString() 
+  body.push(depositsStr)
+
+  const withdrawlsStr =totalAccountDiff.toString();
+  body.push(withdrawlsStr)
+
+  const closingBalanceStr = closingBalance.toString();
+  body.push(closingBalanceStr )
+
+  autoTable(doc, {
+    startY: 75,
+    head: [header],
+    body: [body],
+    tableWidth: 95,
+    columnStyles: {
+      0: {
+        halign: 'center'
+      },
+      1: {
+          halign: 'center'
+      },
+      2: {
+        halign: 'center'
+      },
+      3: {
+        halign: 'center'
+      }
+    },
+    headStyles :{fillColor : autotableColor}
+  });
+  
+}
 const buildTransactionTable = (doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, autotableColor, tableStyle, tableSplit, tableHeaderToggle) => {
 
   const balanceDifference = closingBalance - openingBalance;
