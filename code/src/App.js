@@ -27,6 +27,9 @@ function App() {
     const showBalance = document.getElementById('balance-toggle').checked;
     const tableStyle = document.getElementById('tableStyles').value;
 
+    const openingBalance = document.getElementById('opening-balance').value;
+    const closingBalance = document.getElementById('closing-balance').value;
+
     const monthNames = ["January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December"
     ];
@@ -34,7 +37,7 @@ function App() {
     const closingDateStr = monthNames[closingDate.$M] + " " + closingDate.$D.toString() +  ", " + closingDate.$y.toString()
     console.log(openingDateStr)
   
-    buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle);
+    buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle, parseInt(openingBalance), parseInt(closingBalance));
   };
 
   return (
@@ -120,14 +123,14 @@ function App() {
 }
 
 // A4 PAPER 210mm X 297mm
-const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = false, showBalance = false, openingDateStr, closingDateStr, tableStyle='striped') => {
+const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = false, showBalance = false, openingDateStr, closingDateStr, tableStyle='striped', openingBalance, closingBalance) => {
   let doc = new jsPDF();
   doc.setFont("helvetica");
   doc.setFontSize(9);
   const startDate = new Date('March 1 2023');
   const endDate = new Date('April 1 2023');
-  const openingBalance = 0;
-  const closingBalance = 2000;
+  // const openingBalance = 0;
+  // const closingBalance = 2000;
 
   // doc.text(bankName, 10, 15);
 
@@ -142,7 +145,7 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
   doc.text(bankName, 35, 20);
   doc.text('P.O. Box 1343 Terminal A', 35, 25);
   doc.text('Toronto, Ontario, M1G EY7', 35, 30);
-  doc.text( "From " + openingDateStr + " to " + closingDateStr, 130, 20);
+  doc.text( "From " + openingDateStr + " to " + closingDateStr, 192, 20, {align: 'right'});
 
   doc.setFontSize(12);
   // adding  personal address and account summary
@@ -157,6 +160,9 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
   doc.text("How to reach us: ", 130, 54);
   doc.text("1-800-bank ", 175, 54);
   doc.text('www.'+ bankName +".com", 192, 58, {align: 'right'});
+  doc.text("___________________________________ ", 130, 60);
+
+  buildSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor)
 
   doc.setLineWidth(0.5);
   doc.rect(127, 65, 65, 25);
@@ -166,10 +172,48 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
   doc = buildTransactionTable(doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance, autotableColor, tableStyle);
 
   if (cheques_toggle) {
-    doc = buildChequeTable(doc, 10, startDate, endDate, 3, tableStyle);
+    doc = buildChequeTable(doc, 10, startDate, endDate, 3, tableStyle, autotableColor);
   }
 
   doc.save('test.pdf');
+}
+
+const buildSummaryTable = (doc, bankName, openingDate, closingDate, openingBalance=0, closingBalance=0, autotableColor) => {
+  doc.text("___________________________________ ", 15, 75);
+  // doc.text('')
+
+  const header = [];
+  header.push('Summary of Account');
+  header.push(" ")
+  const body = [];
+  const totalAccountDiff = (closingBalance - openingBalance) / 2
+
+  // body.push([bankName, ""]);
+  body.push(['Your opening balance on ' + openingDate, "$" +openingBalance.toString()] )
+
+  body.push(['Total deposits into your account ' , "+" + totalAccountDiff.toString()] )
+  body.push(['Total withdrawals from your account ' ,  "-" + totalAccountDiff.toString()])
+
+  body.push(['Your closing balance on ' + closingDate, "= $"+closingBalance.toString() ])
+
+  autoTable(doc, {
+    startY: 65,
+    head: [header],
+    body: body,
+    tableWidth: 95,
+    columnStyles: {
+      0: {
+        halign: 'left'
+      },
+      1: {
+          halign: 'right'
+      },
+    },
+    headStyles :{fillColor : autotableColor}
+    // styles: { tableWidth: "75px" },
+    // theme: 'grid'
+  });
+
 }
 
 const buildTransactionTable = (doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, autotableColor, tableStyle) => {
@@ -230,14 +274,14 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
     theme: tableStyle,
     head: [headerRow],
     body: transactionRows,
-    startY: 100,
+    startY: 120,
     headStyles :{fillColor : autotableColor}
   });
 
   return doc;
 }
 
-const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, tableLines='striped', tableStyle='striped') => {
+const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, tableStyle='striped', autotableColor) => {
   const headerRow = ['CHECK #', 'DATE', 'AMOUNT'];
   const chequeRows = [];
   let currentDay = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24) - chequeCount;
@@ -277,7 +321,8 @@ const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, tabl
   autoTable(doc, {
     theme: tableStyle,
     head: [headerRow],
-    body: chequeRows
+    body: chequeRows,
+    headStyles :{fillColor : autotableColor}
   });
 
   return doc;
