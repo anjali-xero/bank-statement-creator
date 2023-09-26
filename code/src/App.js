@@ -300,7 +300,7 @@ const buildSummaryTable = (doc, bankName, openingDate, closingDate, openingBalan
   });
 
 }
-const buildSingleRowSummaryTable = (doc, openingBalance=0, closingBalance=0, autotableColor) => { 
+const buildSingleRowSummaryTable = (doc, bankName, openingDateStr, closingDateStr, openingBalance=0, closingBalance=0, autotableColor) => { 
 
   const header = [];
   header.push('Opening Balance');
