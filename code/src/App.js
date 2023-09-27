@@ -231,7 +231,7 @@ function App() {
           </Row>
           <Row>
             <Col>
-              <h5>Split deposit/credit <strong><em>columns</em></strong></h5>
+              <h5>Split debit/credit <strong><em>columns</em></strong></h5>
               <Tooltip title="Split debit and credit amounts into their own columns in transaction table" placement="left-start" arrow>
                 <label className="switch">
                   <input onChange={() => {
@@ -245,7 +245,7 @@ function App() {
               </Tooltip>
             </Col>
             <Col>
-              <h5>Split deposit/credit into separate <strong><em>tables</em></strong></h5>
+              <h5>Split debit/credit into separate <strong><em>tables</em></strong></h5>
               <Tooltip title="Split debit and credit amounts into separate transaction tables" placement="left-start" arrow>
                 <label className="switch">
                   <input onChange={() => {

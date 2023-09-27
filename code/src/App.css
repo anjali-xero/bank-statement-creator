@@ -22,7 +22,8 @@
   color: white;
   margin-top: 2px;
   padding-bottom: 10px;
-  padding-left: 25px
+  padding-left: 25px;
+  z-index: 5;
 }
 
 .App-header img {
