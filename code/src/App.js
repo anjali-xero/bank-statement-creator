@@ -298,8 +298,8 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
   doc.setFont(customFont ? CUSTOM_FONT : 'helvetica');
   // doc.setFontType('normal');
   doc.setFontSize(9);
-  const startDate = new Date('March 1 2023');
-  const endDate = new Date('April 1 2023');
+  const startDate = new Date(openingDateStr);
+  const endDate = new Date(closingDateStr);
   // const openingBalance = 0;
   // const closingBalance = 2000;
 
