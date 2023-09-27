@@ -20,6 +20,7 @@ import stripePng from "./stripe.png";
 import gridPng from "./grid.png";
 import plainPng from "./plain.png";
 import faker from 'faker';
+import dayjs from 'dayjs';
 
 const MAX_CHEQUE_VALUE = 5000;
 const MAX_CHEQUE_TOTAL = 5000;
@@ -29,8 +30,11 @@ const MAX_CHEQUE_COUNT = 20;
 const SEED = Date.now();
 
 function App() {
-  const [openingDate, setOpeningDate] = React.useState(null);
-  const [closingDate, setClosingDate] = React.useState(null);
+  const currentDate = new Date(); // Now
+  const [openingDate, setOpeningDate] = React.useState(dayjs(currentDate.now));
+  currentDate.setDate(currentDate.getDate() + 30);
+  const [closingDate, setClosingDate] = React.useState(dayjs(currentDate));
+  const [newError, setError] = React.useState(null);
   const [openingBalance, setOpeningBalance] = React.useState(1000);
   const [closingBalance, setClosingBalance] = React.useState(5000);
   const [transactionCount, setTransactionCount] = React.useState(25);
@@ -72,6 +76,7 @@ function App() {
     });
     return optionsObject;
   }
+
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -144,7 +149,7 @@ function App() {
                 <Col>
                   <h2>Opening Date</h2>
                   <div id="date-picker">
-                    <DatePicker label="Required*" id='opening-date' dateFormat='dd,MM,yyyy' value={openingDate} onChange={(newOpeningDate) => setOpeningDate(newOpeningDate)} />
+                    <DatePicker label="Required*" id='opening-date' dateFormat='dd,MM,yyyy' value={openingDate} onChange={(newOpeningDate) => setOpeningDate(newOpeningDate)} defaultValue={Date().now}/>
                   </div>
                 </Col>
                 <Col>
