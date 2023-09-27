@@ -16,14 +16,24 @@ export default function NoiseSlider(props) {
     <Box className="transaction-slider">
       <h2>Noise Intensity: {value/10}</h2>
       <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
-        <Slider 
+        {props.disabled ? 
+          <Slider 
+          disabled
           aria-label="TransactionCount" 
           value={value}
           marks
           step={10}
           min={10}
           max={100}
-          onChange={handleChange} />
+          onChange={handleChange} /> :
+          <Slider 
+          aria-label="TransactionCount" 
+          value={value}
+          marks
+          step={10}
+          min={10}
+          max={100}
+          onChange={handleChange} />}
       </Stack>
     </Box>
   );
