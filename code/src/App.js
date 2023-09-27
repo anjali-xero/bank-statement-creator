@@ -14,10 +14,14 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import { noise } from './noise';
 import NoiseSlider from './NoiseSlider';
+import { Container, Row, Col } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import stripePng from "./stripe.png";
+import gridPng from "./grid.png";
+import plainPng from "./plain.png";
 
 const MAX_CHEQUE_VALUE = 5000;
 const MAX_CHEQUE_TOTAL = 5000;
-const TABLE_HEADER_MARGIN = 2; //px
 const CUSTOM_FONT = "Please write me a song";
 const MAX_CHEQUE_COUNT = 20;
 
@@ -31,6 +35,7 @@ function App() {
   const [transactionCount, setTransactionCount] = React.useState(25);
   const [showCustom, setShowCustom] = React.useState(true);
   const [noiseIntensity, setNoiseIntensity] = React.useState(10);
+  const [currentTableStyle, setCurrentTableStyle] = React.useState('striped');
 
   const handleGenerate = () => {
     console.log('generated!');
@@ -75,8 +80,207 @@ function App() {
           Welcome to bank statement creator
         </h1>
       </header>
+      <Container className="main-form-container">
+        <Row>
+          <Col className="bank-name-selector-container">
+            <Row><h2>Select Bank Name</h2></Row>
+            <Row>
+              <select className="bank-name-selector" onChange={() => {
+                if (document.getElementById('bank-name').value !== 'OTHER (CUSTOM NAME)') {
+                  setShowCustom(false);
+                } else {
+                  console.log('true')
+                  setShowCustom(true);
+                }
+              }} id='bank-name' name='bank-name'>
+                {loadBankNames()}
+              </select>
+              {showCustom ? 
+                <><h4 className="custom-name-header">Input Custom Name</h4>
+                <input
+                  id="custom-bank-name"
+                  type="text"
+                  name="custom-bank-name"
+                  className="custom-bank-fields"
+                /></>
+                :
+                <></>
+              }
+            </Row>
+          </Col>
+        </Row>
+        <Row className="statement-summary-options">
+          <Col>
+              <Row className="balance-row">
+                <Col>
+                  <h2>Opening Balance</h2>
+                  <div id="opening-balance">
+                    <TextField
+                      required
+                      id="outlined-required"
+                      label="Required"
+                      defaultValue="1000"
+                      onChange= {(e) => setOpeningBalance(e.target.value)}
+                      className='balance-text-field'
+                    />
+                  </div>
+                </Col>
+                <Col>
+                  <h2>Closing Balance</h2>
+                  <div id="closing-balance">
+                    <TextField
+                      required
+                      id="outlined-required"
+                      label="Required"
+                      defaultValue="5000"
+                      onChange= {(e) => setClosingBalance(e.target.value)}
+                      className='balance-text-field'
+                    />
+                  </div>
+                </Col>
+              </Row>
+              <Row className="balance-row">
+                <Col>
+                  <h2>Opening Date</h2>
+                  <div id="date-picker">
+                    <DatePicker label="Required*" id='opening-date' dateFormat='dd,MM,yyyy' value={openingDate} onChange={(newOpeningDate) => setOpeningDate(newOpeningDate)} />
+                  </div>
+                </Col>
+                <Col>
+                  <h2>Closing Date</h2>
+                  <div id="date-picker">
+                    <DatePicker label="Required*" id='closing-date' dateFormat='dd,MM,yyyy' value={closingDate} onChange={(newClosingDate) => setClosingDate(newClosingDate)} />
+                  </div>
+                </Col>
+              </Row>
+              <Row className="table-style-row">
+                <Col className="table-style-col">
+                  <h2>Table Style</h2>
+                  <select className="bank-name-selector" name="tableStyles" id="tableStyles" onChange={
+                    (e) => {
+                      setCurrentTableStyle(document.getElementById('tableStyles').value)
+                    }
+                  }>
+                    <option value="striped">STRIPED</option>
+                    <option value="grid">GRID</option>
+                    <option value="plain">PLAIN</option>
+                  </select>
+                </Col>
+                <Col>
+                  {
+                    currentTableStyle === 'plain' ?
+                      <img src={plainPng} className="table-style-image"></img> :
+                      currentTableStyle === 'grid' ?
+                          <img src={gridPng} className="table-style-image"></img> :
+                          <img src={stripePng} className="table-style-image"></img>
+                  }
+                  <p>-- example table --</p>
+                </Col>
+              </Row>
+            </Col>
+        </Row>
+        <Container className="toggle-container">
+          <Row>
+            <Col>
+              <h5>Include cheque table</h5>
+              <label className="switch">
+                <input id='cheques-toggle' type="checkbox"></input>
+                <span className="slider round"></span>
+              </label>
+            </Col>
+            <Col>
+              <h5>Include balance column</h5>
+              <label className="switch">
+                <input id='balance-toggle' type="checkbox"></input>
+                <span className="slider round"></span>
+              </label> 
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <h5>Enable handwriting</h5>
+              <label className="switch">
+                <input id='handwriting-toggle' type="checkbox"></input>
+                <span className="slider round"></span>
+              </label>
+            </Col>
+            <Col>
+              <h5>Show table header on all page</h5> 
+              <label className="switch">
+                <input id='table-header-toggle' type="checkbox"></input>
+                <span className="slider round"></span>
+              </label>  
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <h5>Split deposit/credit <strong><em>columns</em></strong></h5> 
+              <label className="switch">
+                <input onChange={() => {
+                  const column_split_toggle = document.getElementById('deposits-withdrawals-toggle').checked;
+                  if (column_split_toggle) {
+                    document.getElementById('deposits-withdrawals-table-toggle').checked = false
+                  }
+                }} id='deposits-withdrawals-toggle' type="checkbox"></input>
+                <span className="slider round"></span>
+              </label>  
+            </Col>
+            <Col>
+              <h5>Split deposit/credit into separate <strong><em>tables</em></strong></h5>
+              <label className="switch">
+                <input onChange={() => {
+                  const table_split_toggle = document.getElementById('deposits-withdrawals-table-toggle').checked;
+                  if (table_split_toggle) {
+                    document.getElementById('deposits-withdrawals-toggle').checked = false
+                  }
+                }} id='deposits-withdrawals-table-toggle' type="checkbox"></input>
+                <span className="slider round"></span>
+              </label>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <h5>Consolidate summary table into single row</h5>
+              <label className="switch">
+                <input id='summary-header-toggle' type="checkbox"></input>
+                <span className="slider round"></span>
+              </label>
+            </Col>
+            <Col><></></Col>
+          </Row>
+        </Container>
+      </Container>
+      <Container className="slider-box">
+        <Row>
+          <Col xs={2}>
+              <Row><h4>Enable Noise</h4></Row>
+              <Row>
+                <Col>
+                  <label className="switch">
+                    <input id='noise-toggle' type="checkbox"></input>
+                    <span className="slider round"></span>
+                  </label>
+                </Col>
+              </Row>
+          </Col>
+          <Col xs={10}>
+            <NoiseSlider className="transaction-slider" setNoiseIntensity={setNoiseIntensity}></NoiseSlider>
+          </Col>
+        </Row>
+        <Row>
+          <Col xs={2}></Col>
+          <Col xs={10}><ContinuousSlider className="transaction-slider" setTransactionCount={setTransactionCount}/></Col>
+        </Row>
+      </Container>
+      <Container>
+        <Button className="generate-button" onClick={(e) => {
+                e.preventDefault();
+                handleGenerate(transactionCount);
+              }
+            }>generate!</Button>
+      </Container>
       <form>
-        <label> Select Bank Name:</label>
+        {/* <label> Select Bank Name:</label>
         <select onChange={() => {
           if (document.getElementById('bank-name').value !== 'OTHER (CUSTOM NAME)') {
             setShowCustom(false);
@@ -86,9 +290,9 @@ function App() {
           }
         }} id='bank-name' name='bank-name'>
           {loadBankNames()}
-        </select>
+        </select> */}
 
-        {showCustom ? 
+        {/* {showCustom ? 
           <><label id="custom-bank-name-label" className="custom-bank-fields">Input Custom Bank Name:</label>
           <input
             id="custom-bank-name"
@@ -98,9 +302,9 @@ function App() {
           /></>
           :
           <></>
-        }
+        } */}
 
-        <label> Insert Opening balance for bank statement:</label>
+        {/* <label> Insert Opening balance for bank statement:</label>
           <div id="opening-balance">
             <TextField
               required
@@ -109,7 +313,6 @@ function App() {
               defaultValue="1000"
               onChange= {(e) => setOpeningBalance(e.target.value)}
             />
-
           </div>
 
         <label> Insert Closing balance for bank statement:</label>
@@ -122,50 +325,49 @@ function App() {
               defaultValue="5000"
               onChange= {(e) => setClosingBalance(e.target.value)}
             />
-          </div>
+          </div> */}
 
-        <label> Insert Opening Date for bank statement:</label>
+        {/* <label> Insert Opening Date for bank statement:</label>
         <div id="date-picker">
           <DatePicker label="Required*" id='opening-date' dateFormat='dd,MM,yyyy' value={openingDate} onChange={(newOpeningDate) => setOpeningDate(newOpeningDate)} />
-          
-        </div>
-        <label> Insert Closing Date for bank statement:</label>
+        </div> */}
+        {/* <label> Insert Closing Date for bank statement:</label>
         <div id="date-picker">
           <DatePicker label="Required*" id='closing-date' dateFormat='dd,MM,yyyy' value={closingDate} onChange={(newClosingDate) => setClosingDate(newClosingDate)} />
-        </div>
+        </div> */}
 
-        <label for="tableStyle">Table Style:</label>
+        {/* <label for="tableStyle">Table Style:</label>
         <select name="tableStyles" id="tableStyles">
           <option value="striped">STRIPED</option>
           <option value="grid">GRID</option>
           <option value="plain">PLAIN</option>
-        </select>
+        </select> */}
 
-        <label> Switch toggle on to include cheques in bank statement: </label>
+        {/* <label> Switch toggle on to include cheques in bank statement: </label>
         <label className="switch">
           <input id='cheques-toggle' type="checkbox"></input>
           <span className="slider round"></span>
-        </label>
+        </label> */}
 
-        <label> Switch toggle on to include balance column in bank statement: </label>
+        {/* <label> Switch toggle on to include balance column in bank statement: </label>
         <label className="switch">
           <input id='balance-toggle' type="checkbox"></input>
           <span className="slider round"></span>
-        </label>
+        </label> */}
 
-        <label> Switch toggle on to show table header on every page: </label>
+        {/* <label> Switch toggle on to show table header on every page: </label>
         <label className="switch">
           <input id='table-header-toggle' type="checkbox"></input>
           <span className="slider round"></span>
-        </label>
+        </label> */}
 
-        <label> Switch toggle on to use handwriting: </label>
+        {/* <label> Switch toggle on to use handwriting: </label>
         <label className="switch">
           <input id='handwriting-toggle' type="checkbox"></input>
           <span className="slider round"></span>
-        </label>
+        </label> */}
 
-        <label> Switch toggle on to split withdrawals and deposits into seperate <strong>columns</strong> in bank statement: </label>
+        {/* <label> Switch toggle on to split withdrawals and deposits into seperate <strong>columns</strong> in bank statement: </label>
         <label className="switch">
           <input onChange={() => {
             const column_split_toggle = document.getElementById('deposits-withdrawals-toggle').checked;
@@ -174,9 +376,9 @@ function App() {
             }
           }} id='deposits-withdrawals-toggle' type="checkbox"></input>
           <span className="slider round"></span>
-        </label>
+        </label> */}
 
-        <label> Switch toggle on to split withdrawals and deposits into seperate <strong>tables</strong> in bank statement: </label>
+        {/* <label> Switch toggle on to split withdrawals and deposits into seperate <strong>tables</strong> in bank statement: </label>
         <label className="switch">
           <input onChange={() => {
             const table_split_toggle = document.getElementById('deposits-withdrawals-table-toggle').checked;
@@ -185,29 +387,24 @@ function App() {
             }
           }} id='deposits-withdrawals-table-toggle' type="checkbox"></input>
           <span className="slider round"></span>
-        </label>
+        </label> */}
 
-        <label> Switch toggle on to consolidate summary table into one row  </label>
+        {/* <label> Switch toggle on to consolidate summary table into one row  </label>
         <label className="switch">
           <input id='summary-header-toggle' type="checkbox"></input>
           <span className="slider round"></span>
-        </label>
+        </label> */}
 
-        <label> Enable Noise  </label>
+        {/* <label> Enable Noise  </label>
         <label className="switch">
           <input id='noise-toggle' type="checkbox"></input>
           <span className="slider round"></span>
-        </label>
+        </label> */}
 
-        <NoiseSlider className="transaction-slider" setNoiseIntensity={setNoiseIntensity}></NoiseSlider>
+        {/* <NoiseSlider className="transaction-slider" setNoiseIntensity={setNoiseIntensity}></NoiseSlider> */}
 
-        <ContinuousSlider className="transaction-slider" setTransactionCount={setTransactionCount}/>
+        {/* <ContinuousSlider className="transaction-slider" setTransactionCount={setTransactionCount}/> */}
 
-        <Button variant="contained" onClick={(e) => {
-              e.preventDefault();
-              handleGenerate(transactionCount);
-            }
-          }>generate!</Button>
       </form>
      
     </div>

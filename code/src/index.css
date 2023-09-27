@@ -20,12 +20,6 @@ code {
     align-self: center
   }
 }
-button {
-  align-self: center;
-  width: 100px;
-  margin: 10px;
-
-}
 select {
   text-align: center;
   align-self: center;
@@ -48,6 +42,10 @@ label {
   margin: 10px;
 }
 
+.main-form-container {
+  margin-top: 5%;
+}
+
 .form-container {
   margin-left: 3%;
   margin-right: 3%;
@@ -55,11 +53,12 @@ label {
 
 .switch {
   align-self: center;
-  margin: 10px;
   position: relative;
-  display: inline-block;
+  display: block;
   width: 60px;
   height: 34px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Rounded sliders */
@@ -119,4 +118,118 @@ input:checked + .slider:before {
 
 .custom-bank-fields {
   visibility: visible;
+  height: 50px;
+  border-radius: 10px;
+  border-color: #f37221;
+  font-size: 1.2rem;
+  margin-bottom: 3%;
+}
+
+.bank-name-selector {
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+  border-radius: 10px;
+  border-width: 0;
+  height: 50px;
+  padding: 2px;
+  background-color: #d3d3d3;
+  color: black;
+  font-size: 1.2rem;
+  margin-bottom: 3%;
+}
+
+.bank-name-selector:hover {
+  background-color: #9fb8ff;
+  transition: all 0.3s;
+}
+
+.bank-name-selector:focus {
+  border-width: 0;
+}
+
+.bank-name-selector-container {
+  text-align: center;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.balance-row {
+  text-align: center;
+  margin-bottom: 3%;
+}
+
+.balance-text-field {
+  font-size: 1.2rem!important;
+}
+
+.row-margin {
+  margin-bottom: 3%;
+}
+
+.table-style-image {
+  width: 100%;
+}
+
+.table-style-row {
+  text-align: center;
+  margin-top: 5%;
+}
+
+.table-style-col {
+  text-align: center;
+}
+
+.toggle-container {
+  text-align: center;
+  border-width: 3px;
+  border-style: solid;
+  border-radius: 10px;
+  border-color: #165e98;
+  padding: 15px;
+}
+
+.statement-summary-options {
+  text-align: center;
+  border-width: 3px;
+  border-style: solid;
+  border-radius: 10px;
+  border-color: #165e98;
+  padding: 15px;
+  margin-bottom: 3%;
+}
+
+.slider-box {
+  text-align: center;
+  border-width: 3px;
+  border-style: solid;
+  border-radius: 10px;
+  border-color: #165e98;
+  padding: 15px;
+  margin-top: 3%;
+}
+
+.transaction-slider {
+  margin: 0!important;
+}
+
+.generate-button {
+  margin-left: auto!important;
+  margin-right: auto!important;
+  display: block!important;
+  width: 100%!important;
+  height: 80px!important;
+  margin-top: 5%!important;
+  margin-bottom: 5%!important;
+  color: white!important;
+  background-color: #d3881f!important;
+  font-size: 2rem!important;
+  font-weight: bolder!important;
+  border-radius: 10px!important;
+  transition: all 0.2s ease-in-out!important;
+}
+
+.generate-button:hover {
+  transform: scale(1.2);
+  background-color: #18d437!important;
 }
