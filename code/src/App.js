@@ -21,6 +21,8 @@ import gridPng from "./grid.png";
 import plainPng from "./plain.png";
 import faker from 'faker';
 import dayjs from 'dayjs';
+import Toastify from 'toastify-js';
+import "toastify-js/src/toastify.css";
 
 const MAX_CHEQUE_VALUE = 5000;
 const MAX_CHEQUE_TOTAL = 5000;
@@ -41,9 +43,9 @@ function App() {
   const [showCustom, setShowCustom] = React.useState(true);
   const [noiseIntensity, setNoiseIntensity] = React.useState(10);
   const [currentTableStyle, setCurrentTableStyle] = React.useState('striped');
+  const [noiseEnabled, setNoiseEnabled] = React.useState(true);
 
   const handleGenerate = () => {
-    console.log('generated!');
     let bankName = document.getElementById('bank-name').value;
     const numTransactions = transactionCount;
     const cheques_toggle = document.getElementById('cheques-toggle').checked;
@@ -64,7 +66,6 @@ function App() {
     ];
     const openingDateStr = monthNames[openingDate.$M] + " " + openingDate.$D.toString() +  ", " + openingDate.$y.toString()
     const closingDateStr = monthNames[closingDate.$M] + " " + closingDate.$D.toString() +  ", " + closingDate.$y.toString()
-    console.log(openingBalance, closingBalance)
   
     buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle, parseFloat(openingBalance), parseFloat(closingBalance), tableSplit, tableHeaderToggle, summaryToggle, customFont, enableNoise, noiseIntensity);
   };
@@ -97,7 +98,6 @@ function App() {
                 if (document.getElementById('bank-name').value !== 'OTHER (CUSTOM NAME)') {
                   setShowCustom(false);
                 } else {
-                  console.log('true')
                   setShowCustom(true);
                 }
               }} id='bank-name' name='bank-name'>
@@ -265,14 +265,16 @@ function App() {
               <Row>
                 <Col>
                   <label className="switch">
-                    <input id='noise-toggle' type="checkbox"></input>
+                    <input id='noise-toggle' type="checkbox" onChange={() => {
+                      setNoiseEnabled(!document.getElementById('noise-toggle').checked);
+                    }}></input>
                     <span className="slider round"></span>
                   </label>
                 </Col>
               </Row>
           </Col>
           <Col xs={10}>
-            <NoiseSlider className="transaction-slider" setNoiseIntensity={setNoiseIntensity}></NoiseSlider>
+            <NoiseSlider disabled={noiseEnabled} className="transaction-slider" setNoiseIntensity={setNoiseIntensity}></NoiseSlider>
           </Col>
         </Row>
         <Row>
@@ -283,7 +285,12 @@ function App() {
       <Container>
         <Button className="generate-button" onClick={(e) => {
                 e.preventDefault();
-                handleGenerate(transactionCount);
+                try {
+                  handleGenerate(transactionCount);
+                  sendToast('PDF Successfully Generated!')
+                } catch (err) {
+                  sendToast(err);
+                }
               }
             }>generate!</Button>
       </Container>
@@ -332,7 +339,6 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
 
   doc.setFontSize(12);
   // adding  personal address and account summary
-  console.log(faker)
   doc.text(`${faker.name.firstName()} ${faker.name.lastName()}`, 15, 47);
   doc.text(faker.address.streetAddress(), 15, 54);
   doc.text(`${faker.address.city()}, ${faker.address.country()}, ${faker.address.zipCode()}`, 15, 61);
@@ -345,10 +351,6 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
   doc.text("1-800-bank ", 175, 54);
   doc.text('www.'+ bankName +".com", 192, 58, {align: 'right'});
   doc.text("___________________________________ ", 130, 60);
-
-  console.log(openingBalance);
-  console.log(closingBalance);
-  console.log(`BUILDPDF ${openingBalance * closingBalance}`);
 
   if (!summaryToggle) {
     buildSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor, customFont);
@@ -474,7 +476,6 @@ const buildSingleRowSummaryTable = (doc, bankName, openingDateStr, closingDateSt
 const buildTransactionTable = (doc, transactionCount, cheques_toggle, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont, enableNoise, noiseIntensity) => {
 
   const balanceDifference = (closingBalance - (cheques_toggle ? MAX_CHEQUE_TOTAL : 0)) - openingBalance;
-  console.log(`BTT ${openingBalance * closingBalance}`);
 
   let transactionsGenerated = 0;
   let transactionRows = [];
@@ -673,6 +674,26 @@ Date.prototype.addDays = function(days) {
   var date = new Date(this.valueOf());
   date.setDate(date.getDate() + days);
   return date;
+}
+
+const sendToast = (message, fail=false) => {
+  Toastify({
+    text: message,
+    duration: 5000,
+    close: true,
+    gravity: "bottom", // `top` or `bottom`
+    position: "center", // `left`, `center` or `right`
+    stopOnFocus: true, // Prevents dismissing of toast on hover
+    style: {
+      background: fail ? "#eb4c34" : "#5beb34",
+      width: "100%",
+      color: "white",
+      borderRadius: "10px",
+      fontWeight: "bolder",
+      fontSize: "1.5rem"
+    },
+    onClick: function(){} // Callback after click
+  }).showToast();
 }
 
 export default App;
