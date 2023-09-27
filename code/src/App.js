@@ -24,6 +24,8 @@ const SEED = Date.now();
 function App() {
   const [openingDate, setOpeningDate] = React.useState(null);
   const [closingDate, setClosingDate] = React.useState(null);
+  const [openingBalance, setOpeningBalance] = React.useState(null);
+  const [closingBalance, setClosingBalance] = React.useState(null);
   const [transactionCount, setTransactionCount] = React.useState(25);
   const [showCustom, setShowCustom] = React.useState(true);
   const [noiseIntensity, setNoiseIntensity] = React.useState(10);
@@ -38,8 +40,6 @@ function App() {
     const tableStyle = document.getElementById('tableStyles').value;
     const tableSplit = document.getElementById('deposits-withdrawals-table-toggle').checked;
     const tableHeaderToggle = document.getElementById('table-header-toggle').checked;
-    const openingBalance = document.getElementById('opening-balance').value;
-    const closingBalance = document.getElementById('closing-balance').value;
     const customBankName = document.getElementById('custom-bank-name') ? document.getElementById('custom-bank-name').value : "";
     const customFont = document.getElementById('handwriting-toggle').checked;
     const enableNoise = document.getElementById('noise-toggle').checked;
@@ -52,9 +52,9 @@ function App() {
     ];
     const openingDateStr = monthNames[openingDate.$M] + " " + openingDate.$D.toString() +  ", " + openingDate.$y.toString()
     const closingDateStr = monthNames[closingDate.$M] + " " + closingDate.$D.toString() +  ", " + closingDate.$y.toString()
-    console.log(summaryToggle)
+    console.log(openingBalance, closingBalance)
   
-    buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle, parseInt(openingBalance), parseInt(closingBalance), tableSplit, tableHeaderToggle, summaryToggle, customFont, enableNoise, noiseIntensity);
+    buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle, parseFloat(openingBalance), parseFloat(closingBalance), tableSplit, tableHeaderToggle, summaryToggle, customFont, enableNoise, noiseIntensity);
   };
 
   const loadBankNames = () => {
@@ -99,36 +99,37 @@ function App() {
         }
 
         <label> Insert Opening balance for bank statement:</label>
-        {/* <input
-            id="opening-balance"
-            type="text"
-            name="opening-balance"
-          /> */}
           <div id="opening-balance">
             <TextField
               required
               id="outlined-required"
               label="Required"
               defaultValue="1000"
+              onChange= {(e) => setOpeningBalance(e.target.value)}
             />
 
           </div>
 
         <label> Insert Closing balance for bank statement:</label>
-        <input
-            id="closing-balance"
-            type="text"
-            name="closing-balance"
-          />
+
+          <div id="closing-balance">
+            <TextField
+              required
+              id="outlined-required"
+              label="Required"
+              defaultValue="5000"
+              onChange= {(e) => setClosingBalance(e.target.value)}
+            />
+          </div>
 
         <label> Insert Opening Date for bank statement:</label>
         <div id="date-picker">
-          <DatePicker  id='opening-date' dateFormat='dd,MM,yyyy' value={openingDate} onChange={(newOpeningDate) => setOpeningDate(newOpeningDate)} />
+          <DatePicker label="Required*" id='opening-date' dateFormat='dd,MM,yyyy' value={openingDate} onChange={(newOpeningDate) => setOpeningDate(newOpeningDate)} />
           
         </div>
         <label> Insert Closing Date for bank statement:</label>
         <div id="date-picker">
-          <DatePicker  id='closing-date' dateFormat='dd,MM,yyyy' value={closingDate} onChange={(newClosingDate) => setClosingDate(newClosingDate)} />
+          <DatePicker label="Required*" id='closing-date' dateFormat='dd,MM,yyyy' value={closingDate} onChange={(newClosingDate) => setClosingDate(newClosingDate)} />
         </div>
 
         <label for="tableStyle">Table Style:</label>
@@ -313,7 +314,7 @@ const buildSummaryTable = (doc, bankName, openingDate, closingDate, openingBalan
   header.push('Summary of Account');
   header.push(" ")
   const body = [];
-  const totalAccountDiff = (closingBalance - openingBalance) / 2
+  const totalAccountDiff = Math.abs(closingBalance - openingBalance) / 2
 
   // body.push([bankName, ""]);
   body.push(['Your opening balance on ' + openingDate, "$" +openingBalance.toString()] )
@@ -342,7 +343,7 @@ const buildSummaryTable = (doc, bankName, openingDate, closingDate, openingBalan
   });
 
 }
-const buildSingleRowSummaryTable = (doc, bankName, openingDate, closingDate, openingBalance=0, closingBalance=0, autotableColor, customFont) => { 
+const buildSingleRowSummaryTable = (doc, bankName, openingDateStr, closingDateStr, openingBalance=0, closingBalance=0, autotableColor, customFont) => { 
 
   const header = [];
   header.push('Opening Balance');
@@ -350,7 +351,7 @@ const buildSingleRowSummaryTable = (doc, bankName, openingDate, closingDate, ope
   header.push("Withdrawals")
   header.push("Closing Balance")
   const body = [];
-  const totalAccountDiff = (closingBalance - openingBalance) / 2
+  const totalAccountDiff = Math.trunc(Math.abs(closingBalance - openingBalance) / 2)
 
   const openingBalanceStr = openingBalance.toString();
   body.push(openingBalanceStr)
