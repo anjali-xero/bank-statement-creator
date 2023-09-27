@@ -81,9 +81,11 @@ function App() {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
     <div className="App">
-      <header className="App-header sticky">
+      <header className="App-header sticky" >
+
         <h1>
-          Welcome to bank statement creator
+        <img src='bsc-logo.png'></img>
+          Bank Statement Creator
         </h1>
       </header>
       <Container className="main-form-container">
