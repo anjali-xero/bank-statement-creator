@@ -93,7 +93,7 @@ function App() {
       <Container className="main-form-container">
         <Row>
           <Col className="bank-name-selector-container">
-            <Row><h2>Select Bank Name</h2></Row>
+            <Row><h4>Select Bank Name</h4></Row>
             <Row>
               <select className="bank-name-selector" onChange={() => {
                 if (document.getElementById('bank-name').value !== 'OTHER (CUSTOM NAME)') {
@@ -122,7 +122,7 @@ function App() {
           <Col>
               <Row className="balance-row">
                 <Col>
-                  <h2>Opening Balance</h2>
+                  <h4>Opening Balance</h4>
                   <div id="opening-balance">
                     <TextField
                       required
@@ -135,7 +135,7 @@ function App() {
                   </div>
                 </Col>
                 <Col>
-                  <h2>Closing Balance</h2>
+                  <h4>Closing Balance</h4>
                   <div id="closing-balance">
                     <TextField
                       required
@@ -150,13 +150,13 @@ function App() {
               </Row>
               <Row className="balance-row">
                 <Col>
-                  <h2>Opening Date</h2>
+                  <h4>Opening Date</h4>
                   <div id="date-picker">
                     <DatePicker label="Required*" id='opening-date' dateFormat='dd,MM,yyyy' value={openingDate} onChange={(newOpeningDate) => setOpeningDate(newOpeningDate)} defaultValue={Date().now}/>
                   </div>
                 </Col>
                 <Col>
-                  <h2>Closing Date</h2>
+                  <h4>Closing Date</h4>
                   <div id="date-picker">
                     <DatePicker label="Required*" id='closing-date' dateFormat='dd,MM,yyyy' value={closingDate} onChange={(newClosingDate) => setClosingDate(newClosingDate)} />
                   </div>
@@ -164,7 +164,7 @@ function App() {
               </Row>
               <Row className="table-style-row">
                 <Col className="table-style-col">
-                  <h2>Table Style</h2>
+                  <h4>Table Style</h4>
                   <select className="bank-name-selector" name="tableStyles" id="tableStyles" onChange={
                     (e) => {
                       setCurrentTableStyle(document.getElementById('tableStyles').value)
