@@ -23,6 +23,7 @@ import faker from 'faker';
 import dayjs from 'dayjs';
 import Toastify from 'toastify-js';
 import "toastify-js/src/toastify.css";
+import Tooltip from '@mui/material/Tooltip';
 
 const MAX_CHEQUE_VALUE = 5000;
 const MAX_CHEQUE_TOTAL = 5000;
@@ -189,68 +190,82 @@ function App() {
           <Row>
             <Col>
               <h5>Include cheque table</h5>
-              <label className="switch">
-                <input id='cheques-toggle' type="checkbox"></input>
-                <span className="slider round"></span>
-              </label>
+              <Tooltip title="Add cheque table to bottom of statement" placement="left-start" arrow>
+                <label className="switch">
+                  <input id='cheques-toggle' type="checkbox"></input>
+                  <span className="slider round"></span>
+                </label>
+              </Tooltip>
             </Col>
             <Col>
               <h5>Include balance column</h5>
-              <label className="switch">
-                <input id='balance-toggle' type="checkbox"></input>
-                <span className="slider round"></span>
-              </label> 
+              <Tooltip title="Add balance column to end of transaction table" placement="left-start" arrow>
+                <label className="switch">
+                  <input id='balance-toggle' type="checkbox"></input>
+                  <span className="slider round"></span>
+                </label> 
+              </Tooltip>
             </Col>
           </Row>
           <Row>
             <Col>
               <h5>Enable handwriting</h5>
-              <label className="switch">
-                <input id='handwriting-toggle' type="checkbox"></input>
-                <span className="slider round"></span>
-              </label>
+              <Tooltip title="Use handwriting font to mimic handwriting" placement="left-start" arrow>
+                <label className="switch">
+                  <input id='handwriting-toggle' type="checkbox"></input>
+                  <span className="slider round"></span>
+                </label>
+              </Tooltip>
             </Col>
             <Col>
               <h5>Show table header on all page</h5> 
-              <label className="switch">
-                <input id='table-header-toggle' type="checkbox"></input>
-                <span className="slider round"></span>
-              </label>  
+              <Tooltip title="Show table headers when tables bleed into next page" placement="left-start" arrow>
+                <label className="switch">
+                  <input id='table-header-toggle' type="checkbox"></input>
+                  <span className="slider round"></span>
+                </label> 
+              </Tooltip> 
             </Col>
           </Row>
           <Row>
             <Col>
-              <h5>Split deposit/credit <strong><em>columns</em></strong></h5> 
-              <label className="switch">
-                <input onChange={() => {
-                  const column_split_toggle = document.getElementById('deposits-withdrawals-toggle').checked;
-                  if (column_split_toggle) {
-                    document.getElementById('deposits-withdrawals-table-toggle').checked = false
-                  }
-                }} id='deposits-withdrawals-toggle' type="checkbox"></input>
-                <span className="slider round"></span>
-              </label>  
+              <h5>Split deposit/credit <strong><em>columns</em></strong></h5>
+              <Tooltip title="Split debit and credit amounts into their own columns in transaction table" placement="left-start" arrow>
+                <label className="switch">
+                  <input onChange={() => {
+                    const column_split_toggle = document.getElementById('deposits-withdrawals-toggle').checked;
+                    if (column_split_toggle) {
+                      document.getElementById('deposits-withdrawals-table-toggle').checked = false
+                    }
+                  }} id='deposits-withdrawals-toggle' type="checkbox"></input>
+                  <span className="slider round"></span>
+                </label>  
+              </Tooltip>
             </Col>
             <Col>
               <h5>Split deposit/credit into separate <strong><em>tables</em></strong></h5>
-              <label className="switch">
-                <input onChange={() => {
-                  const table_split_toggle = document.getElementById('deposits-withdrawals-table-toggle').checked;
-                  if (table_split_toggle) {
-                    document.getElementById('deposits-withdrawals-toggle').checked = false
-                  }
-                }} id='deposits-withdrawals-table-toggle' type="checkbox"></input>
-                <span className="slider round"></span>
-              </label>
+              <Tooltip title="Split debit and credit amounts into separate transaction tables" placement="left-start" arrow>
+                <label className="switch">
+                  <input onChange={() => {
+                    const table_split_toggle = document.getElementById('deposits-withdrawals-table-toggle').checked;
+                    if (table_split_toggle) {
+                      document.getElementById('deposits-withdrawals-toggle').checked = false
+                    }
+                  }} id='deposits-withdrawals-table-toggle' type="checkbox"></input>
+                  <span className="slider round"></span>
+                </label>
+              </Tooltip>
             </Col>
           </Row>
           <Row>
             <Col>
               <h5>Consolidate summary table into single row</h5>
-              <label className="switch">
-                <input id='summary-header-toggle' type="checkbox"></input>
-                <span className="slider round"></span>
-              </label>
+              <Tooltip title="Display summary table as a single row table" placement="left-start" arrow>
+                <label className="switch">
+                  <input id='summary-header-toggle' type="checkbox"></input>
+                  <span className="slider round"></span>
+                </label>
+              </Tooltip>
             </Col>
             <Col><></></Col>
           </Row>
@@ -262,12 +277,14 @@ function App() {
               <Row><h4>Enable Noise</h4></Row>
               <Row>
                 <Col>
+                  <Tooltip title="Add noise distortion on entire PDF to mimic low quality scan. (Noise Intensity 1-3 reccommended)" placement="bottom" arrow>
                   <label className="switch">
                     <input id='noise-toggle' type="checkbox" onChange={() => {
                       setNoiseEnabled(!document.getElementById('noise-toggle').checked);
                     }}></input>
-                    <span className="slider round"></span>
+                    <span className="slider-spicy round"></span>
                   </label>
+                  </Tooltip>
                 </Col>
               </Row>
           </Col>
