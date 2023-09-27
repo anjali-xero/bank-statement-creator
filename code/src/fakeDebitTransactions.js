@@ -100,6 +100,7 @@ export const debit_descriptions = [
   'JR PASS YAMANOTE LINE',
   'VERY NICE PANTS',
   'NOT SO NICE PANTS',
+  'CANNED APPALACHIAN AIR 40OZ',
   'OP ELECTRONIC ARTS OD#1200987 569,000 APEX COINS',
   `OP CRYPTO TRANSFER #${faker.finance.routingNumber()} ${faker.finance.currencyCode()} TO ${(faker.animal.type()).toUpperCase()}COIN`,
   `OP CRYPTO TRANSFER #${faker.finance.routingNumber()} ${faker.finance.currencyCode()} TO ${(faker.animal.type()).toUpperCase()}COIN`,
