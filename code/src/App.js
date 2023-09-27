@@ -15,17 +15,19 @@ import TextField from '@mui/material/TextField';
 import { noise } from './noise';
 import NoiseSlider from './NoiseSlider';
 
-const MAX_CHEQUE_VALUE = 10000;
+const MAX_CHEQUE_VALUE = 5000;
+const MAX_CHEQUE_TOTAL = 5000;
 const TABLE_HEADER_MARGIN = 2; //px
 const CUSTOM_FONT = "Please write me a song";
+const MAX_CHEQUE_COUNT = 20;
 
 const SEED = Date.now();
 
 function App() {
   const [openingDate, setOpeningDate] = React.useState(null);
   const [closingDate, setClosingDate] = React.useState(null);
-  const [openingBalance, setOpeningBalance] = React.useState(null);
-  const [closingBalance, setClosingBalance] = React.useState(null);
+  const [openingBalance, setOpeningBalance] = React.useState(1000);
+  const [closingBalance, setClosingBalance] = React.useState(5000);
   const [transactionCount, setTransactionCount] = React.useState(25);
   const [showCustom, setShowCustom] = React.useState(true);
   const [noiseIntensity, setNoiseIntensity] = React.useState(10);
@@ -233,7 +235,7 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
     "Capital One": [0, 20, 42], "U.S. Bank": [0, 35, 113], "Desjardins": [0, 136, 83], "RBS": [61, 15, 81],
     "Home Depot": [252, 126, 50], "Capitec": [0, 76, 122], "Regions": [110, 199, 69], "Chase": [0, 86, 166],
     "HSBC": [223, 0, 22], "Bank of America": [232, 0, 56], "Wells Fargo": [219, 5, 42], "CIBC": [180, 0, 30],
-    "OTHER (CUSTOM NAME)": [34, 62, 26]
+    "OTHER (CUSTOM NAME)": [34, 62, 26], "AMEX": [47, 109, 201]
   }
 
   const colorBankName = BANK_NAMES.includes(bankName) ? bankName : 'OTHER (CUSTOM NAME)';
@@ -288,10 +290,10 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
 
   doc.text('Dear customer, we are pleased to introduce to you paperless banking. We are excited for you to join us on this journey. Now you can retrieve images of cheques in seconds and view them online of on our app. ', 130, 70, { maxWidth: 60 });
 
-  doc = buildTransactionTable(doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont, enableNoise, noiseIntensity);
+  doc = buildTransactionTable(doc, transactionCount, cheques_toggle, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont, enableNoise, noiseIntensity);
 
   if (cheques_toggle) {
-    doc = buildChequeTable(doc, 10, startDate, endDate, 3, autotableColor, tableStyle, tableHeaderToggle, customFont);
+    doc = buildChequeTable(doc, Math.floor(Math.random(SEED) * MAX_CHEQUE_COUNT), startDate, endDate, 3, autotableColor, tableStyle, tableHeaderToggle, customFont);
   }
 
   if (enableNoise) {
@@ -389,9 +391,9 @@ const buildSingleRowSummaryTable = (doc, bankName, openingDateStr, closingDateSt
   });
   
 }
-const buildTransactionTable = (doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont, enableNoise, noiseIntensity) => {
+const buildTransactionTable = (doc, transactionCount, cheques_toggle, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont, enableNoise, noiseIntensity) => {
 
-  const balanceDifference = closingBalance - openingBalance;
+  const balanceDifference = (closingBalance - (cheques_toggle ? MAX_CHEQUE_TOTAL : 0)) - openingBalance;
   console.log(`BTT ${openingBalance * closingBalance}`);
 
   let transactionsGenerated = 0;
@@ -509,7 +511,17 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
       startY: 120,
       showHeader: tableHeaderToggle ? 'everyPage' : 'firstPage',
       styles: { font: customFont ? CUSTOM_FONT : 'helvetica' },
-      headStyles :{fillColor : autotableColor}
+      headStyles :{fillColor : autotableColor},
+      didDrawPage: function(data) {
+        if (enableNoise) {
+          const noiseOverlay = noise;
+          let noiseApplied = 0;
+          while (noiseApplied < noiseIntensity/10) {
+            doc.addImage(noiseOverlay, 'PNG', 0, 0, doc.maxWidth, doc.height);
+            noiseApplied++;
+          }
+        }
+      }
     });
   }
 
@@ -520,6 +532,7 @@ const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, auto
   const headerRow = ['CHECK #', 'DATE', 'AMOUNT'];
   const chequeRows = [];
   let currentDay = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24) - chequeCount;
+  const allocatedChequeTotal = MAX_CHEQUE_TOTAL;
 
   let numChequeTables = 1;
   while (numChequeTables < numColumns) {
@@ -536,9 +549,12 @@ const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, auto
     for (let i = 0; i < numColumns; i++) {
       const checkNum = `${Math.floor(Math.random(SEED) * 1000000)}`;
       const checkDate = startDate.addDays(currentDay > 0 ? currentDay : 0);
-      let checkAmount = (Math.round(Math.random(SEED)) * 2 - 1) * (Math.round(100 * (Math.random(SEED) * MAX_CHEQUE_VALUE + Number.EPSILON)) / 100);
-      if (accumulatedChequeValue !== 0 && numChequesAdded === chequeCount - 1) {
-        checkAmount = (-1 * accumulatedChequeValue);
+      let checkAmount = (Math.round(100 * (Math.random(SEED) * MAX_CHEQUE_VALUE + Number.EPSILON)) / 100);
+      if (accumulatedChequeValue < allocatedChequeTotal && numChequesAdded === chequeCount - 1) {
+        checkAmount = (allocatedChequeTotal - accumulatedChequeValue);
+      }
+      if (allocatedChequeTotal - accumulatedChequeValue - checkAmount < 0)  {
+        checkAmount = Math.floor((allocatedChequeTotal - accumulatedChequeValue) / 2);
       }
       accumulatedChequeValue += checkAmount
 
