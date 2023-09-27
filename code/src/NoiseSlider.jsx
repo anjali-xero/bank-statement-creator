@@ -14,7 +14,7 @@ export default function NoiseSlider(props) {
 
   return (
     <Box className="transaction-slider">
-      <h2>Noise Intensity: {value/10}</h2>
+      <h2>Noise Intensity: {value/10}{(value/10 > 3) ? <h5 className="warning-noise-message">(This document likely wont extract with this level of noise)</h5> : ""}</h2>
       <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
         {props.disabled ? 
           <Slider 
@@ -33,7 +33,8 @@ export default function NoiseSlider(props) {
           step={10}
           min={10}
           max={100}
-          onChange={handleChange} />}
+          onChange={handleChange}
+          color="secondary" />}
       </Stack>
     </Box>
   );
