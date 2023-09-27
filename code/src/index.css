@@ -233,3 +233,9 @@ input:checked + .slider:before {
   transform: scale(1.2);
   background-color: #18d437!important;
 }
+
+.sticky {
+  position: fixed;
+  top: 0;
+  width: 100%;
+}

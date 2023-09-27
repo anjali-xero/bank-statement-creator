@@ -19,6 +19,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import stripePng from "./stripe.png";
 import gridPng from "./grid.png";
 import plainPng from "./plain.png";
+import faker from 'faker';
 
 const MAX_CHEQUE_VALUE = 5000;
 const MAX_CHEQUE_TOTAL = 5000;
@@ -75,7 +76,7 @@ function App() {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
     <div className="App">
-      <header className="App-header">
+      <header className="App-header sticky">
         <h1>
           Welcome to bank statement creator
         </h1>
@@ -179,7 +180,7 @@ function App() {
               </Row>
             </Col>
         </Row>
-        <Container className="toggle-container">
+        <Row className="toggle-container">
           <Row>
             <Col>
               <h5>Include cheque table</h5>
@@ -248,7 +249,7 @@ function App() {
             </Col>
             <Col><></></Col>
           </Row>
-        </Container>
+        </Row>
       </Container>
       <Container className="slider-box">
         <Row>
@@ -280,133 +281,7 @@ function App() {
             }>generate!</Button>
       </Container>
       <form>
-        {/* <label> Select Bank Name:</label>
-        <select onChange={() => {
-          if (document.getElementById('bank-name').value !== 'OTHER (CUSTOM NAME)') {
-            setShowCustom(false);
-          } else {
-            console.log('true')
-            setShowCustom(true);
-          }
-        }} id='bank-name' name='bank-name'>
-          {loadBankNames()}
-        </select> */}
-
-        {/* {showCustom ? 
-          <><label id="custom-bank-name-label" className="custom-bank-fields">Input Custom Bank Name:</label>
-          <input
-            id="custom-bank-name"
-            type="text"
-            name="custom-bank-name"
-            className="custom-bank-fields"
-          /></>
-          :
-          <></>
-        } */}
-
-        {/* <label> Insert Opening balance for bank statement:</label>
-          <div id="opening-balance">
-            <TextField
-              required
-              id="outlined-required"
-              label="Required"
-              defaultValue="1000"
-              onChange= {(e) => setOpeningBalance(e.target.value)}
-            />
-          </div>
-
-        <label> Insert Closing balance for bank statement:</label>
-
-          <div id="closing-balance">
-            <TextField
-              required
-              id="outlined-required"
-              label="Required"
-              defaultValue="5000"
-              onChange= {(e) => setClosingBalance(e.target.value)}
-            />
-          </div> */}
-
-        {/* <label> Insert Opening Date for bank statement:</label>
-        <div id="date-picker">
-          <DatePicker label="Required*" id='opening-date' dateFormat='dd,MM,yyyy' value={openingDate} onChange={(newOpeningDate) => setOpeningDate(newOpeningDate)} />
-        </div> */}
-        {/* <label> Insert Closing Date for bank statement:</label>
-        <div id="date-picker">
-          <DatePicker label="Required*" id='closing-date' dateFormat='dd,MM,yyyy' value={closingDate} onChange={(newClosingDate) => setClosingDate(newClosingDate)} />
-        </div> */}
-
-        {/* <label for="tableStyle">Table Style:</label>
-        <select name="tableStyles" id="tableStyles">
-          <option value="striped">STRIPED</option>
-          <option value="grid">GRID</option>
-          <option value="plain">PLAIN</option>
-        </select> */}
-
-        {/* <label> Switch toggle on to include cheques in bank statement: </label>
-        <label className="switch">
-          <input id='cheques-toggle' type="checkbox"></input>
-          <span className="slider round"></span>
-        </label> */}
-
-        {/* <label> Switch toggle on to include balance column in bank statement: </label>
-        <label className="switch">
-          <input id='balance-toggle' type="checkbox"></input>
-          <span className="slider round"></span>
-        </label> */}
-
-        {/* <label> Switch toggle on to show table header on every page: </label>
-        <label className="switch">
-          <input id='table-header-toggle' type="checkbox"></input>
-          <span className="slider round"></span>
-        </label> */}
-
-        {/* <label> Switch toggle on to use handwriting: </label>
-        <label className="switch">
-          <input id='handwriting-toggle' type="checkbox"></input>
-          <span className="slider round"></span>
-        </label> */}
-
-        {/* <label> Switch toggle on to split withdrawals and deposits into seperate <strong>columns</strong> in bank statement: </label>
-        <label className="switch">
-          <input onChange={() => {
-            const column_split_toggle = document.getElementById('deposits-withdrawals-toggle').checked;
-            if (column_split_toggle) {
-              document.getElementById('deposits-withdrawals-table-toggle').checked = false
-            }
-          }} id='deposits-withdrawals-toggle' type="checkbox"></input>
-          <span className="slider round"></span>
-        </label> */}
-
-        {/* <label> Switch toggle on to split withdrawals and deposits into seperate <strong>tables</strong> in bank statement: </label>
-        <label className="switch">
-          <input onChange={() => {
-            const table_split_toggle = document.getElementById('deposits-withdrawals-table-toggle').checked;
-            if (table_split_toggle) {
-              document.getElementById('deposits-withdrawals-toggle').checked = false
-            }
-          }} id='deposits-withdrawals-table-toggle' type="checkbox"></input>
-          <span className="slider round"></span>
-        </label> */}
-
-        {/* <label> Switch toggle on to consolidate summary table into one row  </label>
-        <label className="switch">
-          <input id='summary-header-toggle' type="checkbox"></input>
-          <span className="slider round"></span>
-        </label> */}
-
-        {/* <label> Enable Noise  </label>
-        <label className="switch">
-          <input id='noise-toggle' type="checkbox"></input>
-          <span className="slider round"></span>
-        </label> */}
-
-        {/* <NoiseSlider className="transaction-slider" setNoiseIntensity={setNoiseIntensity}></NoiseSlider> */}
-
-        {/* <ContinuousSlider className="transaction-slider" setTransactionCount={setTransactionCount}/> */}
-
       </form>
-     
     </div>
     </LocalizationProvider>
   );
@@ -444,15 +319,16 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
 
   // adding bank name and address 
   doc.text(bankName, 35, 20);
-  doc.text('P.O. Box 1343 Terminal A', 35, 25);
-  doc.text('Toronto, Ontario, M1G EY7', 35, 30);
+  doc.text(`P.O. Box ${faker.address.streetAddress()}`, 35, 25);
+  doc.text(`${faker.address.state()}, ${faker.address.country()}, ${faker.address.zipCode()}`, 35, 30);
   doc.text( "From " + openingDateStr + " to " + closingDateStr, 192, 20, {align: 'right'});
 
   doc.setFontSize(12);
   // adding  personal address and account summary
-  doc.text("Susan Sample", 15, 47);
-  doc.text('1234 Random Street, Unit 1', 15, 54);
-  doc.text('Toronto, Ontario, M1G P9H', 15, 61);
+  console.log(faker)
+  doc.text(`${faker.name.firstName()} ${faker.name.lastName()}`, 15, 47);
+  doc.text(faker.address.streetAddress(), 15, 54);
+  doc.text(`${faker.address.city()}, ${faker.address.country()}, ${faker.address.zipCode()}`, 15, 61);
 
   doc.setFontSize(9);
   doc.text("Your account number: ", 130, 47);

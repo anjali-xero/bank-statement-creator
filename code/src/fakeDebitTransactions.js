@@ -1,3 +1,5 @@
+import faker from 'faker';
+
 export const debit_descriptions = [
   'OP ONLINE PURCHASE UBER CANADA',
   'CW INTERAC ETRNSFER SENT COTTON EYE JOE 202580803182956983473',
@@ -97,5 +99,13 @@ export const debit_descriptions = [
   'SOUTH EDINBURGH LORDSHIP RIGHTS',
   'JR PASS YAMANOTE LINE',
   'VERY NICE PANTS',
-  'NOT SO NICE PANTS'
+  'NOT SO NICE PANTS',
+  'OP ELECTRONIC ARTS OD#1200987 569,000 APEX COINS',
+  `OP CRYPTO TRANSFER #${faker.finance.routingNumber()} ${faker.finance.currencyCode()} TO ${(faker.animal.type()).toUpperCase()}COIN`,
+  `OP CRYPTO TRANSFER #${faker.finance.routingNumber()} ${faker.finance.currencyCode()} TO ${(faker.animal.type()).toUpperCase()}COIN`,
+  `OP CRYPTO TRANSFER #${faker.finance.routingNumber()} ${faker.finance.currencyCode()} TO ${(faker.animal.type()).toUpperCase()}COIN`,
+  `OP CRYPTO TRANSFER #${faker.finance.routingNumber()} ${faker.finance.currencyCode()} TO ${(faker.animal.type()).toUpperCase()}COIN`,
+  `OP CRYPTO TRANSFER #${faker.finance.routingNumber()} ${faker.finance.currencyCode()} TO ${(faker.animal.type()).toUpperCase()}COIN`,
+  `CW FOOD ${faker.random.words().toUpperCase()} ${faker.phone.phoneNumber()}`,
+  `OP CRYPTO TRANSFER ${faker.name.prefix().toUpperCase()} ${faker.animal.type().toUpperCase()} ${faker.music.genre().toUpperCase()} ${faker.name.jobTitle().toUpperCase()}S.${faker.system.fileType().toUpperCase()}`
 ];

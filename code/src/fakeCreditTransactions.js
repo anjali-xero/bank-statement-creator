@@ -1,3 +1,5 @@
+import faker from 'faker';
+
 export const credit_descriptions = [
   'ETRSFR #10005 CIA.GOV',
   'XERO SOFTWARE C PAY BIG',
@@ -17,5 +19,28 @@ export const credit_descriptions = [
   'APPLE SOFTWARE X PAY MASSIVE',
   'GOOGLE SOFTWARE D PAY MEDIUM',
   'REXALL MARKETING L PAY SMALL',
-  'ROMAINE LETTUCE STOCKS'
+  'ROMAINE LETTUCE STOCKS',
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.ORG`,
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.COM`,
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.NET`,
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.ORG`,
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.COM`,
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.NET`,
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.ORG`,
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.COM`,
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.NET`,
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.ORG`,
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.COM`,
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.NET`,
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.ORG`,
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.COM`,
+  `ETRSFR #${faker.random.number()} ${faker.company.companyName().toUpperCase()}.NET`,
+  `CRYPTO WITHDRAWAL #${faker.internet.ipv6()} ${(faker.animal.type()).toUpperCase()}COIN`,
+  `CRYPTO WITHDRAWAL #${faker.internet.ipv6()} ${(faker.animal.type()).toUpperCase()}COIN`,
+  `CRYPTO WITHDRAWAL #${faker.internet.ipv6()} ${(faker.animal.type()).toUpperCase()}COIN`,
+  `CRYPTO WITHDRAWAL #${faker.internet.ipv6()} ${(faker.animal.type()).toUpperCase()}COIN`,
+  `CRYPTO WITHDRAWAL #${faker.internet.ipv6()} ${(faker.animal.type()).toUpperCase()}COIN`,
+  `CRYPTO WITHDRAWAL #${faker.internet.ipv6()} ${(faker.animal.type()).toUpperCase()}COIN`,
+  `CRYPTO WITHDRAWAL #${faker.internet.ipv6()} ${(faker.animal.type()).toUpperCase()}COIN`,
+  `CRYPTO WITHDRAWAL #${faker.internet.ipv6()} ${(faker.animal.type()).toUpperCase()}COIN`,
 ];
