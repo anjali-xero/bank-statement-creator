@@ -8,15 +8,42 @@
     animation: App-logo-spin infinite 20s linear;
   }
 }
-
+.App {
+  padding-top:35px;
+}
 .App-header {
-  background-color: #282c34;
+  float: left;
+  background-color: #243b44;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+  margin-top: 2px;
+  padding-bottom: 10px;
+  padding-left: 25px
+}
+
+.App-header img {
+  display: inline
+}
+.App-header h1 {
+  position: relative;
+  top: 18px;
+  left: 10px;
+  display: inline;
+}
+.App-header h1 img {
+  display: inline;
+  width: 50px;
+  height: 50px;
+  /* margin: 10px; */
+  margin-right: 10px;
+  margin-bottom: 15px;
+  
+  border: 5px solid whitesmoke;
+  border-radius: 50%;
 }
 
 .App-link {
