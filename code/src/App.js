@@ -12,6 +12,8 @@ import { BANK_NAMES } from './bankNames';
 import './Please write me a song-normal.js'
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
+import { noise } from './noise';
+import NoiseSlider from './NoiseSlider';
 
 const MAX_CHEQUE_VALUE = 10000;
 const TABLE_HEADER_MARGIN = 2; //px
@@ -24,6 +26,7 @@ function App() {
   const [closingDate, setClosingDate] = React.useState(null);
   const [transactionCount, setTransactionCount] = React.useState(25);
   const [showCustom, setShowCustom] = React.useState(true);
+  const [noiseIntensity, setNoiseIntensity] = React.useState(10);
 
   const handleGenerate = () => {
     console.log('generated!');
@@ -39,6 +42,7 @@ function App() {
     const closingBalance = document.getElementById('closing-balance').value;
     const customBankName = document.getElementById('custom-bank-name') ? document.getElementById('custom-bank-name').value : "";
     const customFont = document.getElementById('handwriting-toggle').checked;
+    const enableNoise = document.getElementById('noise-toggle').checked;
 
     bankName = customBankName.length > 0 ? customBankName : bankName;
     const summaryToggle = document.getElementById('summary-header-toggle').checked;
@@ -50,7 +54,7 @@ function App() {
     const closingDateStr = monthNames[closingDate.$M] + " " + closingDate.$D.toString() +  ", " + closingDate.$y.toString()
     console.log(summaryToggle)
   
-    buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle, parseInt(openingBalance), parseInt(closingBalance), tableSplit, tableHeaderToggle, summaryToggle, customFont);
+    buildPdf(bankName, cheques_toggle, numTransactions, splitAmount, showBalance, openingDateStr, closingDateStr, tableStyle, parseInt(openingBalance), parseInt(closingBalance), tableSplit, tableHeaderToggle, summaryToggle, customFont, enableNoise, noiseIntensity);
   };
 
   const loadBankNames = () => {
@@ -186,6 +190,14 @@ function App() {
           <span className="slider round"></span>
         </label>
 
+        <label> Enable Noise  </label>
+        <label className="switch">
+          <input id='noise-toggle' type="checkbox"></input>
+          <span className="slider round"></span>
+        </label>
+
+        <NoiseSlider className="transaction-slider" setNoiseIntensity={setNoiseIntensity}></NoiseSlider>
+
         <ContinuousSlider className="transaction-slider" setTransactionCount={setTransactionCount}/>
 
         <Button variant="contained" onClick={(e) => {
@@ -201,7 +213,7 @@ function App() {
 }
 
 // A4 PAPER 210mm X 297mm
-const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = false, showBalance = false, openingDateStr, closingDateStr, tableStyle='striped', openingBalance, closingBalance, tableSplit, tableHeaderToggle, summaryToggle, customFont) => {
+const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = false, showBalance = false, openingDateStr, closingDateStr, tableStyle='striped', openingBalance, closingBalance, tableSplit, tableHeaderToggle, summaryToggle, customFont, enableNoise, noiseIntensity) => {
   let doc = new jsPDF();
   doc.setFont(customFont ? CUSTOM_FONT : 'helvetica');
   // doc.setFontType('normal');
@@ -251,23 +263,43 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
   doc.text('www.'+ bankName +".com", 192, 58, {align: 'right'});
   doc.text("___________________________________ ", 130, 60);
 
+  console.log(openingBalance);
+  console.log(closingBalance);
+  console.log(`BUILDPDF ${openingBalance * closingBalance}`);
+
   if (!summaryToggle) {
     buildSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor, customFont);
   } else {
     buildSingleRowSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor, customFont);
   }
 
-  
+  if (enableNoise) {
+    const noiseOverlay = noise;
+    let noiseApplied = 0;
+    while (noiseApplied < noiseIntensity/10) {
+      doc.addImage(noiseOverlay, 'PNG', 0, 0, doc.maxWidth, doc.height);
+      noiseApplied++;
+    }
+  }
 
   doc.setLineWidth(0.5);
   doc.rect(127, 65, 65, 25);
 
   doc.text('Dear customer, we are pleased to introduce to you paperless banking. We are excited for you to join us on this journey. Now you can retrieve images of cheques in seconds and view them online of on our app. ', 130, 70, { maxWidth: 60 });
 
-  doc = buildTransactionTable(doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont);
+  doc = buildTransactionTable(doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont, enableNoise, noiseIntensity);
 
   if (cheques_toggle) {
     doc = buildChequeTable(doc, 10, startDate, endDate, 3, autotableColor, tableStyle, tableHeaderToggle, customFont);
+  }
+
+  if (enableNoise) {
+    const noiseOverlay = noise;
+    let noiseApplied = 0;
+    while (noiseApplied < noiseIntensity/10) {
+      doc.addImage(noiseOverlay, 'PNG', 0, 0, doc.maxWidth, doc.height);
+      noiseApplied++;
+    }
   }
 
   doc.save('test.pdf');
@@ -356,9 +388,10 @@ const buildSingleRowSummaryTable = (doc, bankName, openingDate, closingDate, ope
   });
   
 }
-const buildTransactionTable = (doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont) => {
+const buildTransactionTable = (doc, transactionCount, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont, enableNoise, noiseIntensity) => {
 
   const balanceDifference = closingBalance - openingBalance;
+  console.log(`BTT ${openingBalance * closingBalance}`);
 
   let transactionsGenerated = 0;
   let transactionRows = [];
@@ -415,7 +448,7 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
     }
 
     const previousTableY = doc.autoTable.previous.finalY;
-
+    
     autoTable(doc, {
       theme: tableStyle,
       head: [headerRow],
@@ -425,12 +458,15 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
       startY: 120,
       showHeader: tableHeaderToggle ? 'everyPage' : 'firstPage',
       styles: { font: customFont ? CUSTOM_FONT : 'helvetica' },
-      addPageContent: function(data) {
-        console.log(doc.autoTable.previous.finalY);
-        const previousY = doc.autoTable.previous.finalY;
-        const approxTableHeight = (data.table.body.length + 1) * data.table.body[0].height;
-        const titleY = previousY ? previousY + TABLE_HEADER_MARGIN*2 : data.cursor.y - approxTableHeight - TABLE_HEADER_MARGIN;
-        doc.text("CREDIT TRANSACTIONS", 15, titleY);
+      didDrawPage: function(data) {
+        if (enableNoise) {
+          const noiseOverlay = noise;
+          let noiseApplied = 0;
+          while (noiseApplied < noiseIntensity/10) {
+            doc.addImage(noiseOverlay, 'PNG', 0, 0, doc.maxWidth, doc.height);
+            noiseApplied++;
+          }
+        }
       }
     });
 
@@ -442,12 +478,15 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
       startY: 120,
       showHeader: tableHeaderToggle ? 'everyPage' : 'firstPage',
       styles: { font: customFont ? CUSTOM_FONT : 'helvetica' },
-      addPageContent: function(data) {
-        console.log(doc.autoTable.previous.finalY);
-        const previousY = doc.autoTable.previous.finalY;
-        const approxTableHeight = (data.table.body.length + 1) * data.table.body[0].height;
-        const titleY = previousY ? previousY + TABLE_HEADER_MARGIN*2 : data.cursor.y - approxTableHeight - TABLE_HEADER_MARGIN;
-        doc.text("DEBIT TRANSACTIONS", 15, titleY);
+      didDrawPage: function(data) {
+        if (enableNoise) {
+          const noiseOverlay = noise;
+          let noiseApplied = 0;
+          while (noiseApplied < noiseIntensity/10) {
+            doc.addImage(noiseOverlay, 'PNG', 0, 0, doc.maxWidth, doc.height);
+            noiseApplied++;
+          }
+        }
       }
     });
   } else {
@@ -476,7 +515,7 @@ const buildTransactionTable = (doc, transactionCount, startDate, endDate, openin
   return doc;
 }
 
-const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, autotableColor, tableStyle='striped', tableHeaderToggle, customFont) => {
+const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, autotableColor, tableStyle='striped', tableHeaderToggle, customFont, enableNoise, noiseIntensity) => {
   const headerRow = ['CHECK #', 'DATE', 'AMOUNT'];
   const chequeRows = [];
   let currentDay = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24) - chequeCount;
@@ -520,6 +559,16 @@ const buildChequeTable = (doc, chequeCount, startDate, endDate, numColumns, auto
     showHeader: tableHeaderToggle ? 'everyPage' : 'firstPage',
     headStyles: {fillColor: autotableColor},
     styles: { font: customFont ? CUSTOM_FONT : 'helvetica' },
+    didDrawPage: function (data) {
+      if (enableNoise) {
+        const noiseOverlay = noise;
+        let noiseApplied = 0;
+        while (noiseApplied < noiseIntensity/10) {
+          doc.addImage(noiseOverlay, 'PNG', 0, 0, doc.maxWidth, doc.height);
+          noiseApplied++;
+        }
+      }
+    }
   });
 
   return doc;
