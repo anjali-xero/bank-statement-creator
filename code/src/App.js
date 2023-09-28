@@ -32,6 +32,9 @@ const MAX_CHEQUE_COUNT = 20;
 
 const SEED = Date.now();
 
+let totalDebit = 0;
+let totalCredit = 0;
+
 function App() {
   const currentDate = new Date(); // Now
   const [openingDate, setOpeningDate] = React.useState(dayjs(currentDate.now));
@@ -339,6 +342,10 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
 
   // doc.text(bankName, 10, 15);
 
+  let buildSummaryTableFunc;
+  let buildTransactionTableFunc;
+  let buildChequeTableFunc;
+
   const autotableColorDict = {
     'TD': [53, 178, 52], 'BMO': [0, 121, 193], "Scotiabank":[255,0,0] , "RBC": [255, 210, 0],
     "Citibank": [0, 93, 224], "ATB": [0, 117, 234], "Paypal": [255, 205, 47], "Tangerine": [239, 108, 47],
@@ -377,27 +384,27 @@ const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = fals
   doc.text('www.'+ bankName +".com", 192, 58, {align: 'right'});
   doc.text("___________________________________ ", 130, 60);
 
-  if (!summaryToggle) {
-    buildSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor, customFont);
-  } else {
-    buildSingleRowSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor, customFont);
-  }
+  // if (!summaryToggle) {
+  //   buildSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor, customFont);
+  // } else {
+  //   buildSingleRowSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor, customFont);
+  // }
 
-  if (enableNoise) {
-    const noiseOverlay = noise;
-    let noiseApplied = 0;
-    while (noiseApplied < noiseIntensity/10) {
-      doc.addImage(noiseOverlay, 'PNG', 0, 0, doc.maxWidth, doc.height);
-      noiseApplied++;
-    }
-  }
+  // if (enableNoise) {
+  //   const noiseOverlay = noise;
+  //   let noiseApplied = 0;
+  //   while (noiseApplied < noiseIntensity/10) {
+  //     doc.addImage(noiseOverlay, 'PNG', 0, 0, doc.maxWidth, doc.height);
+  //     noiseApplied++;
+  //   }
+  // }
 
-  doc.setLineWidth(0.5);
-  doc.rect(127, 65, 65, 25);
+  // doc.setLineWidth(0.5);
+  // doc.rect(127, 65, 65, 25);
 
-  doc.text('Dear customer, we are pleased to introduce to you paperless banking. We are excited for you to join us on this journey. Now you can retrieve images of cheques in seconds and view them online of on our app. ', 130, 70, { maxWidth: 60 });
+  // doc.text('Dear customer, we are pleased to introduce to you paperless banking. We are excited for you to join us on this journey. Now you can retrieve images of cheques in seconds and view them online of on our app. ', 130, 70, { maxWidth: 60 });
 
-  doc = buildTransactionTable(doc, transactionCount, cheques_toggle, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont, enableNoise, noiseIntensity);
+  doc = buildTransactionTable(doc, transactionCount, cheques_toggle, startDate, endDate, openingBalance, closingBalance, splitAmount, showBalance, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont, enableNoise, noiseIntensity, summaryToggle, bankName, openingDateStr, closingDateStr);
 
   if (cheques_toggle) {
     doc = buildChequeTable(doc, Math.floor(Math.random(SEED) * MAX_CHEQUE_COUNT), startDate, endDate, 3, autotableColor, tableStyle, tableHeaderToggle, customFont);
@@ -423,13 +430,15 @@ const buildSummaryTable = (doc, bankName, openingDate, closingDate, openingBalan
   header.push('Summary of Account');
   header.push(" ")
   const body = [];
-  const totalAccountDiff = Math.abs(closingBalance - openingBalance) / 2
+  // const totalAccountDiff = Math.abs(closingBalance - openingBalance) / 2
+  const roundTotalDebit = (100 * (Math.abs(totalDebit) + Number.EPSILON)) / 100;
+  const roundTotalCredit = (100 * (Math.abs(totalCredit) + Number.EPSILON)) / 100;
 
   // body.push([bankName, ""]);
   body.push(['Your opening balance on ' + openingDate, "$" +openingBalance.toString()] )
 
-  body.push(['Total deposits into your account ' , "+" + totalAccountDiff.toString()] )
-  body.push(['Total withdrawals from your account ' ,  "-" + totalAccountDiff.toString()])
+  body.push(['Total deposits into your account ' , "+" + roundTotalCredit.toFixed(2).toString()] )
+  body.push(['Total withdrawals from your account ' ,  "-" + roundTotalDebit.toFixed(2).toString()])
 
   body.push(['Your closing balance on ' + closingDate, "= $"+closingBalance.toString() ])
 
@@ -460,16 +469,18 @@ const buildSingleRowSummaryTable = (doc, bankName, openingDateStr, closingDateSt
   header.push("Withdrawals")
   header.push("Closing Balance")
   const body = [];
-  const totalAccountDiff = Math.trunc(Math.abs(closingBalance - openingBalance) / 2)
+  // const totalAccountDiff = Math.trunc(Math.abs(closingBalance - openingBalance) / 2)
+  const roundTotalDebit = (100 * (Math.abs(totalDebit) + Number.EPSILON)) / 100;
+  const roundTotalCredit = (100 * (Math.abs(totalCredit) + Number.EPSILON)) / 100;
 
   const openingBalanceStr = openingBalance.toString();
   body.push(openingBalanceStr)
 
-  const depositsStr = totalAccountDiff.toString() 
-  body.push(depositsStr)
+  // const depositsStr = totalAccountDiff.toString() 
+  body.push(roundTotalCredit.toFixed(2).toString())
 
-  const withdrawlsStr =totalAccountDiff.toString();
-  body.push(withdrawlsStr)
+  // const withdrawlsStr =totalAccountDiff.toString();
+  body.push(roundTotalDebit.toFixed(2).toString())
 
   const closingBalanceStr = closingBalance.toString();
   body.push(closingBalanceStr )
@@ -498,15 +509,20 @@ const buildSingleRowSummaryTable = (doc, bankName, openingDateStr, closingDateSt
   });
   
 }
-const buildTransactionTable = (doc, transactionCount, cheques_toggle, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont, enableNoise, noiseIntensity) => {
+const buildTransactionTable = (doc, transactionCount, cheques_toggle, startDate, endDate, openingBalance, closingBalance, splitAmount = false, showBalance = false, autotableColor, tableStyle, tableSplit, tableHeaderToggle, customFont, enableNoise, noiseIntensity, summaryToggle, bankName, openingDateStr, closingDateStr) => {
 
   const balanceDifference = (closingBalance - (cheques_toggle ? MAX_CHEQUE_TOTAL : 0)) - openingBalance;
+
+  totalCredit += MAX_CHEQUE_TOTAL;
 
   let transactionsGenerated = 0;
   let transactionRows = [];
   let debitTransactionRows = [];
   let creditTransactionRows = [];
   let accumulatedBalanceDifference = 0;
+  // fix weird month offset
+  startDate.setMonth(startDate.getMonth() + 1);
+  endDate.setMonth(endDate.getMonth() + 1);
   let currentDay = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24) - transactionCount;
 
   while (transactionsGenerated < transactionCount) {
@@ -517,6 +533,12 @@ const buildTransactionTable = (doc, transactionCount, cheques_toggle, startDate,
     }
 
     accumulatedBalanceDifference += currentTransactionAmount;
+
+    if (currentTransactionAmount >= 0) {
+      totalDebit += currentTransactionAmount;
+    } else {
+      totalCredit += currentTransactionAmount;
+    }
 
     const currLineDate = startDate.addDays(currentDay > 0 ? currentDay : 0);
     const descriptionObject = currentTransactionAmount < 0 ? debit_descriptions : credit_descriptions;
@@ -546,6 +568,26 @@ const buildTransactionTable = (doc, transactionCount, cheques_toggle, startDate,
     currentDay++;
     transactionsGenerated++;
   }
+
+  if (!summaryToggle) {
+    buildSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor, customFont);
+  } else {
+    buildSingleRowSummaryTable(doc, bankName, openingDateStr, closingDateStr, openingBalance, closingBalance, autotableColor, customFont);
+  }
+
+  if (enableNoise) {
+    const noiseOverlay = noise;
+    let noiseApplied = 0;
+    while (noiseApplied < noiseIntensity/10) {
+      doc.addImage(noiseOverlay, 'PNG', 0, 0, doc.maxWidth, doc.height);
+      noiseApplied++;
+    }
+  }
+
+  doc.setLineWidth(0.5);
+  doc.rect(127, 65, 65, 25);
+
+  doc.text('Dear customer, we are pleased to introduce to you paperless banking. We are excited for you to join us on this journey. Now you can retrieve images of cheques in seconds and view them online of on our app. ', 130, 70, { maxWidth: 60 });
 
   const headerRow = ['TRAN DATE', 'POST DATE', 'DESCRIPTION'];
 
