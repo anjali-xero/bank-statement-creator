@@ -331,6 +331,9 @@ function App() {
 
 // A4 PAPER 210mm X 297mm
 const buildPdf = (bankName, cheques_toggle, transactionCount, splitAmount = false, showBalance = false, openingDateStr, closingDateStr, tableStyle='striped', openingBalance, closingBalance, tableSplit, tableHeaderToggle, summaryToggle, customFont, enableNoise, noiseIntensity) => {
+  totalDebit = 0;
+  totalCredit = 0;
+
   let doc = new jsPDF();
   doc.setFont(customFont ? CUSTOM_FONT : 'helvetica');
   // doc.setFontType('normal');
@@ -437,8 +440,8 @@ const buildSummaryTable = (doc, bankName, openingDate, closingDate, openingBalan
   // body.push([bankName, ""]);
   body.push(['Your opening balance on ' + openingDate, "$" +openingBalance.toString()] )
 
-  body.push(['Total deposits into your account ' , "+" + roundTotalCredit.toFixed(2).toString()] )
-  body.push(['Total withdrawals from your account ' ,  "-" + roundTotalDebit.toFixed(2).toString()])
+  body.push(['Total deposits into your account ' , "+" + Math.abs(totalCredit).toFixed(2).toString()] )
+  body.push(['Total withdrawals from your account ' ,  "-" + Math.abs(totalDebit).toFixed(2).toString()])
 
   body.push(['Your closing balance on ' + closingDate, "= $"+closingBalance.toString() ])
 
@@ -477,10 +480,10 @@ const buildSingleRowSummaryTable = (doc, bankName, openingDateStr, closingDateSt
   body.push(openingBalanceStr)
 
   // const depositsStr = totalAccountDiff.toString() 
-  body.push(roundTotalCredit.toFixed(2).toString())
+  body.push(Math.abs(totalCredit).toFixed(2).toString())
 
   // const withdrawlsStr =totalAccountDiff.toString();
-  body.push(roundTotalDebit.toFixed(2).toString())
+  body.push(Math.abs(totalDebit).toFixed(2).toString())
 
   const closingBalanceStr = closingBalance.toString();
   body.push(closingBalanceStr )
@@ -513,7 +516,7 @@ const buildTransactionTable = (doc, transactionCount, cheques_toggle, startDate,
 
   const balanceDifference = (closingBalance - (cheques_toggle ? MAX_CHEQUE_TOTAL : 0)) - openingBalance;
 
-  totalCredit += MAX_CHEQUE_TOTAL;
+  totalCredit += (cheques_toggle ? MAX_CHEQUE_TOTAL : 0);
 
   let transactionsGenerated = 0;
   let transactionRows = [];
