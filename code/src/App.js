@@ -303,10 +303,18 @@ function App() {
         <Button className="generate-button" onClick={(e) => {
                 e.preventDefault();
                 try {
-                  handleGenerate(transactionCount);
-                  sendToast('PDF Successfully Generated!')
+                  if (!openingBalance || !closingBalance) {
+                    sendToast('Opening/Closing balance is required', true);
+                  } else {
+                    handleGenerate(transactionCount);
+                    sendToast('PDF Successfully Generated!');
+                  }
                 } catch (err) {
-                  sendToast(err);
+                  if (!openingDate || !closingDate) {
+                    sendToast('Opening/Closing date is required', true);
+                  } else {
+                    sendToast(err, true);
+                  }
                 }
               }
             }>generate!</Button>
